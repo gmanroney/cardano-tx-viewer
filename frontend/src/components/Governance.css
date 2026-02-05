@@ -553,6 +553,73 @@
   margin: 0;
 }
 
+/* Formatted Metadata Styles */
+.metadata-formatted {
+  margin-top: 1rem;
+}
+
+.metadata-field {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #2d3748;
+}
+
+.metadata-field:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.metadata-field-title {
+  margin: 0 0 1rem 0;
+  color: #3b9dff;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metadata-field-content {
+  margin: 0;
+  color: #e0e6ed;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.metadata-field-content p {
+  margin: 0;
+  line-height: 1.8;
+}
+
+.metadata-list {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #e0e6ed;
+  line-height: 1.8;
+}
+
+.metadata-list li {
+  margin-bottom: 0.5rem;
+}
+
+.metadata-list li:last-child {
+  margin-bottom: 0;
+}
+
+.metadata-list a {
+  color: #3b9dff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.metadata-list a:hover {
+  color: #60b0ff;
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .governance-header {
     flex-direction: column;

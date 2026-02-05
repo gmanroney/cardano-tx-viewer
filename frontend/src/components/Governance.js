@@ -465,28 +465,88 @@ function Governance() {
                 </div>
               )}
 
-              {selectedProposal.metadata && (
+              {selectedProposal.metadata && selectedProposal.metadata.body && (
                 <div className="detail-section">
-                  <h4>Metadata</h4>
+                  <h4>Proposal Information</h4>
+
+                  {selectedProposal.metadata.body.title && (
+                    <div className="detail-row">
+                      <span className="detail-label">Title:</span>
+                      <span className="detail-value">{selectedProposal.metadata.body.title}</span>
+                    </div>
+                  )}
+
+                  {selectedProposal.metadata.body.abstract && (
+                    <div className="detail-row">
+                      <span className="detail-label">Abstract:</span>
+                      <span className="detail-value">{selectedProposal.metadata.body.abstract}</span>
+                    </div>
+                  )}
+
+                  {selectedProposal.metadata.body.motivation && (
+                    <div className="detail-row">
+                      <span className="detail-label">Motivation:</span>
+                      <span className="detail-value">{selectedProposal.metadata.body.motivation}</span>
+                    </div>
+                  )}
+
+                  {selectedProposal.metadata.body.rationale && (
+                    <div className="detail-row">
+                      <span className="detail-label">Rationale:</span>
+                      <span className="detail-value">{selectedProposal.metadata.body.rationale}</span>
+                    </div>
+                  )}
+
+                  {selectedProposal.metadata.body.authors && selectedProposal.metadata.body.authors.length > 0 && (
+                    <div className="detail-row">
+                      <span className="detail-label">Authors:</span>
+                      <span className="detail-value">
+                        {selectedProposal.metadata.body.authors.map(author =>
+                          typeof author === 'object' ? author.name || JSON.stringify(author) : author
+                        ).join(', ')}
+                      </span>
+                    </div>
+                  )}
+
+                  {selectedProposal.metadata.body.references && selectedProposal.metadata.body.references.length > 0 && (
+                    <div className="detail-row">
+                      <span className="detail-label">References:</span>
+                      <span className="detail-value">
+                        {selectedProposal.metadata.body.references.map((ref, idx) => (
+                          <span key={idx}>
+                            {ref.uri ? (
+                              <a href={ref.uri} target="_blank" rel="noopener noreferrer" className="anchor-link" style={{display: 'block', marginBottom: '0.5rem'}}>
+                                {ref.label || ref.uri}
+                              </a>
+                            ) : (
+                              <span style={{display: 'block', marginBottom: '0.5rem'}}>{ref.label || JSON.stringify(ref)}</span>
+                            )}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {selectedProposal.metadata && (selectedProposal.metadata.url || selectedProposal.metadata.hash) && (
+                <div className="detail-section">
+                  <h4>Metadata Source</h4>
+
                   {selectedProposal.metadata.url && (
                     <div className="detail-row">
-                      <span className="detail-label">URL:</span>
+                      <span className="detail-label">Metadata URL:</span>
                       <a href={selectedProposal.metadata.url} target="_blank" rel="noopener noreferrer" className="detail-value anchor-link">
                         {selectedProposal.metadata.url}
                       </a>
                     </div>
                   )}
+
                   {selectedProposal.metadata.hash && (
                     <div className="detail-row">
-                      <span className="detail-label">Hash:</span>
+                      <span className="detail-label">Metadata Hash:</span>
                       <span className="detail-value hash">{selectedProposal.metadata.hash}</span>
                     </div>
-                  )}
-                  {selectedProposal.metadata.body && (
-                    <>
-                      <h5 style={{marginTop: '1rem', marginBottom: '0.5rem', color: '#a0aec0'}}>Metadata Body:</h5>
-                      <pre className="metadata-pre">{JSON.stringify(selectedProposal.metadata.body, null, 2)}</pre>
-                    </>
                   )}
                 </div>
               )}

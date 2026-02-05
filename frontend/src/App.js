@@ -6,6 +6,7 @@ import Stats from './components/Stats';
 import Dashboard from './components/Dashboard';
 import DatabaseBrowser from './components/DatabaseBrowser';
 import Governance from './components/Governance';
+import TransactionList from './components/TransactionList';
 
 function App() {
   const [transactions, setTransactions] = useState([]);
@@ -14,7 +15,7 @@ function App() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, database, governance
+  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, transactions, database, governance
   const loaderRef = useRef(null);
 
   const fetchTransactions = async (pageNum) => {
@@ -114,6 +115,12 @@ function App() {
               📊 Dashboard
             </button>
             <button
+              className={`nav-btn ${currentView === 'transactions' ? 'active' : ''}`}
+              onClick={() => setCurrentView('transactions')}
+            >
+              📜 Transactions
+            </button>
+            <button
               className={`nav-btn ${currentView === 'database' ? 'active' : ''}`}
               onClick={() => setCurrentView('database')}
             >
@@ -135,6 +142,8 @@ function App() {
           {stats && <Stats stats={stats} onRefresh={handleManualFetch} />}
         </>
       )}
+
+      {currentView === 'transactions' && <TransactionList />}
 
       {currentView === 'database' && <DatabaseBrowser />}
 

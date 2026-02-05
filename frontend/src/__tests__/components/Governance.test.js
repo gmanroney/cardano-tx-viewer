@@ -51,13 +51,13 @@ describe('Governance Component', () => {
 
   test('fetches and displays governance proposals', async () => {
     axios.get.mockResolvedValue({ data: mockGovernanceData });
-    
+
     render(<Governance />);
-    
+
     await waitFor(() => {
-      expect(screen.getByText('abc123'.substring(0, 12))).toBeInTheDocument();
+      expect(screen.getByText(/abc123/i)).toBeInTheDocument();
     });
-    
+
     expect(axios.get).toHaveBeenCalledWith('/api/governance/proposals');
   });
 
@@ -74,17 +74,20 @@ describe('Governance Component', () => {
 
   test('handles filter buttons', async () => {
     axios.get.mockResolvedValue({ data: mockGovernanceData });
-    
+
     render(<Governance />);
-    
+
     await waitFor(() => {
-      const activeFilter = screen.getByText(/Active \(1\)/i);
-      fireEvent.click(activeFilter);
+      expect(screen.getByText(/Active \(1\)/i)).toBeInTheDocument();
     });
-    
-    // Check that only active proposals are shown
+
+    const activeFilter = screen.getByText(/Active \(1\)/i);
+    fireEvent.click(activeFilter);
+
+    // Check that only active proposal rows are shown (not the enacted one)
     await waitFor(() => {
-      expect(screen.getByText(/Active/i)).toBeInTheDocument();
+      const viewButtons = screen.getAllByText('View Details');
+      expect(viewButtons.length).toBe(1);
     });
   });
 

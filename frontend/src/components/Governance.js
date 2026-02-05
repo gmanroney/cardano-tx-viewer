@@ -53,24 +53,33 @@ function Governance() {
   };
 
   const viewProposal = async (proposal) => {
+    console.log('viewProposal called with:', proposal);
+    console.log('Current selectedProposal:', selectedProposal);
+
     // Toggle: if clicking the same row, close it
     if (selectedProposal?.txHash === proposal.txHash && selectedProposal?.certIndex === proposal.certIndex) {
+      console.log('Closing proposal - same row clicked');
       setSelectedProposal(null);
       return;
     }
 
+    console.log('Opening proposal...');
     setLoadingDetails(true);
     setSelectedProposal(proposal);
 
     try {
       // Fetch detailed proposal information including votes and metadata
+      console.log('Fetching details for:', proposal.txHash, proposal.certIndex);
       const response = await axios.get(`/api/governance/proposals/${proposal.txHash}/${proposal.certIndex}`);
+      console.log('Received detailed data:', response.data);
       setSelectedProposal(response.data);
     } catch (err) {
       console.error('Error fetching proposal details:', err);
       // Keep the basic proposal data if detailed fetch fails
+      console.log('Keeping basic proposal data due to error');
     } finally {
       setLoadingDetails(false);
+      console.log('Loading complete, loadingDetails set to false');
     }
   };
 
@@ -127,6 +136,12 @@ function Governance() {
   };
 
   const renderProposalDetails = (proposal) => {
+    if (!proposal) {
+      return <div className="inline-details">No proposal data available</div>;
+    }
+
+    console.log('Rendering proposal details:', proposal);
+
     return (
       <div className="inline-details">
         <div className="details-grid">
@@ -134,7 +149,7 @@ function Governance() {
             <h5>Transaction Information</h5>
             <div className="detail-item">
               <span className="detail-key">Transaction Hash</span>
-              <span className="detail-val hash-mono">{proposal.txHash}</span>
+              <span className="detail-val hash-mono">{proposal.txHash || 'N/A'}</span>
             </div>
             <div className="detail-item">
               <span className="detail-key">Certificate Index</span>
@@ -143,6 +158,10 @@ function Governance() {
             <div className="detail-item">
               <span className="detail-key">Type</span>
               <span className="detail-val">{proposal.type || 'Proposal'}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-key">Status</span>
+              <span className="detail-val">{proposal.status || 'Active'}</span>
             </div>
           </div>
 

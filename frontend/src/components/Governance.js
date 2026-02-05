@@ -12,7 +12,7 @@ function Governance() {
   const [sortField, setSortField] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
   const [loadingDetails, setLoadingDetails] = useState(false);
-  const processingClickRef = useRef(false);
+  const lastClickTimeRef = useRef(0);
   const itemsPerPage = 20;
 
   useEffect(() => {
@@ -54,25 +54,23 @@ function Governance() {
   };
 
   const viewProposal = async (proposal) => {
-    const proposalKey = `${proposal.txHash}-${proposal.certIndex}`;
-
-    // Prevent concurrent clicks on same proposal
-    if (processingClickRef.current === proposalKey) {
-      console.error('[DEBUG] Click ignored - already processing this exact proposal');
+    // Aggressive debounce: ignore clicks within 500ms of last click
+    const now = Date.now();
+    if (now - lastClickTimeRef.current < 500) {
+      console.error('[DEBUG] Click ignored - debounced (within 500ms of last click)');
       return;
     }
+    lastClickTimeRef.current = now;
 
     // Toggle: if clicking the same row, close it
     if (selectedProposal?.txHash === proposal.txHash && selectedProposal?.certIndex === proposal.certIndex) {
       console.error('[DEBUG] Toggling off - closing proposal');
       setSelectedProposal(null);
       setLoadingDetails(false);
-      processingClickRef.current = null;
       return;
     }
 
     console.error('[DEBUG] Opening proposal:', proposal.txHash, proposal.certIndex);
-    processingClickRef.current = proposalKey;
 
     // Set selected immediately so row expands
     setSelectedProposal(proposal);
@@ -100,7 +98,6 @@ function Governance() {
     } finally {
       console.error('[DEBUG] Setting loadingDetails to false');
       setLoadingDetails(false);
-      processingClickRef.current = null;
     }
   };
 

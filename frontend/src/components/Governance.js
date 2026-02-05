@@ -68,9 +68,6 @@ function Governance() {
     }
   };
 
-  const closeModal = () => {
-    setSelectedProposal(null);
-  };
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -121,6 +118,145 @@ function Governance() {
     enacted: proposals.filter(p => p.status === 'Enacted').length,
     expired: proposals.filter(p => p.status === 'Expired').length,
     dropped: proposals.filter(p => p.status === 'Dropped').length
+  };
+
+  const renderProposalDetails = (proposal) => {
+    return (
+      <div className="inline-details">
+        <div className="details-grid">
+          <div className="detail-group">
+            <h5>Transaction Information</h5>
+            <div className="detail-item">
+              <span className="detail-key">Transaction Hash</span>
+              <span className="detail-val hash-mono">{proposal.txHash}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-key">Certificate Index</span>
+              <span className="detail-val">{proposal.certIndex ?? 'N/A'}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-key">Type</span>
+              <span className="detail-val">{proposal.type || 'Proposal'}</span>
+            </div>
+          </div>
+
+          {(proposal.deposit || proposal.returnAddress) && (
+            <div className="detail-group">
+              <h5>Financial Information</h5>
+              {proposal.deposit && (
+                <div className="detail-item">
+                  <span className="detail-key">Deposit</span>
+                  <span className="detail-val">{formatADA(proposal.deposit)} ADA</span>
+                </div>
+              )}
+              {proposal.returnAddress && (
+                <div className="detail-item">
+                  <span className="detail-key">Return Address</span>
+                  <span className="detail-val hash-mono">{proposal.returnAddress}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {(proposal.votingProcedure || proposal.votes) && (
+            <div className="detail-group">
+              <h5>Voting Information</h5>
+              {proposal.votes && (
+                <div className="detail-item">
+                  <span className="detail-key">Total Votes</span>
+                  <span className="detail-val">{proposal.votes.length || 0}</span>
+                </div>
+              )}
+              {proposal.voteCount && (
+                <>
+                  <div className="detail-item">
+                    <span className="detail-key">Yes Votes</span>
+                    <span className="detail-val vote-yes">{proposal.voteCount.yes || 0}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-key">No Votes</span>
+                    <span className="detail-val vote-no">{proposal.voteCount.no || 0}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-key">Abstain</span>
+                    <span className="detail-val">{proposal.voteCount.abstain || 0}</span>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {proposal.metadata && proposal.metadata.json_metadata && proposal.metadata.json_metadata.body && (
+          <div className="metadata-section">
+            <h5>Proposal Metadata</h5>
+            <div className="metadata-content">
+              {Object.keys(proposal.metadata.json_metadata.body).map((key) => {
+                const value = proposal.metadata.json_metadata.body[key];
+                const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+
+                if (!value || (Array.isArray(value) && value.length === 0)) return null;
+
+                if (key === 'references' && Array.isArray(value)) {
+                  return (
+                    <div className="metadata-item" key={key}>
+                      <span className="metadata-key">{label}</span>
+                      <div className="metadata-val">
+                        {value.map((ref, idx) => (
+                          <div key={idx} className="reference-item">
+                            {ref.uri ? (
+                              <a href={ref.uri} target="_blank" rel="noopener noreferrer" className="ref-link">
+                                {ref.label || ref.uri}
+                              </a>
+                            ) : (
+                              <span>{ref.label || JSON.stringify(ref)}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (typeof value === 'string' && value.length > 300) {
+                  return (
+                    <div className="metadata-item full-width" key={key}>
+                      <span className="metadata-key">{label}</span>
+                      <div className="metadata-val text-content">{value}</div>
+                    </div>
+                  );
+                }
+
+                if (Array.isArray(value)) {
+                  return (
+                    <div className="metadata-item" key={key}>
+                      <span className="metadata-key">{label}</span>
+                      <div className="metadata-val">{value.join(', ')}</div>
+                    </div>
+                  );
+                }
+
+                if (typeof value === 'object') {
+                  return (
+                    <div className="metadata-item" key={key}>
+                      <span className="metadata-key">{label}</span>
+                      <div className="metadata-val"><pre>{JSON.stringify(value, null, 2)}</pre></div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="metadata-item" key={key}>
+                    <span className="metadata-key">{label}</span>
+                    <div className="metadata-val">{String(value)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (loading) {
@@ -253,32 +389,49 @@ function Governance() {
                   <th onClick={() => handleSort('certIndex')} style={{cursor: 'pointer'}}>
                     Cert Index {getSortIcon('certIndex')}
                   </th>
-                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedProposals.map((proposal, index) => (
-                  <tr key={`${proposal.txHash}-${index}`}>
-                    <td className="hash-cell" title={proposal.txHash}>
-                      {formatHash(proposal.txHash)}
-                    </td>
-                    <td className="type-cell">{proposal.type || 'Proposal'}</td>
-                    <td>
-                      <span className={`status-badge ${getStatusClass(proposal)}`}>
-                        {proposal.status || 'Active'}
-                      </span>
-                    </td>
-                    <td>{formatADA(proposal.deposit)}</td>
-                    <td>{proposal.certIndex ?? '-'}</td>
-                    <td>
-                      <button
-                        className="view-btn"
-                        onClick={() => viewProposal(proposal)}
-                      >
-                        View Details
-                      </button>
-                    </td>
-                  </tr>
+                  <React.Fragment key={`${proposal.txHash}-${index}`}>
+                    <tr
+                      className={`gov-table-row ${selectedProposal?.txHash === proposal.txHash && selectedProposal?.certIndex === proposal.certIndex ? 'expanded' : ''}`}
+                      onClick={() => viewProposal(proposal)}
+                    >
+                      <td className="hash-cell" title={proposal.txHash}>
+                        <span className="expand-indicator">
+                          {selectedProposal?.txHash === proposal.txHash && selectedProposal?.certIndex === proposal.certIndex ? '▼' : '▶'}
+                        </span>
+                        {formatHash(proposal.txHash)}
+                      </td>
+                      <td className="type-cell">{proposal.type || 'Proposal'}</td>
+                      <td>
+                        <span className={`status-badge ${getStatusClass(proposal)}`}>
+                          {proposal.status || 'Active'}
+                        </span>
+                      </td>
+                      <td className="deposit-cell">{formatADA(proposal.deposit)}</td>
+                      <td className="cert-cell">{proposal.certIndex ?? '-'}</td>
+                    </tr>
+                    {selectedProposal?.txHash === proposal.txHash && selectedProposal?.certIndex === proposal.certIndex && (
+                      <tr className="detail-row-expanded">
+                        <td colSpan="5">
+                          <div className="detail-panel">
+                            {loadingDetails ? (
+                              <div className="detail-loading">
+                                <div className="spinner-small"></div>
+                                <span>Loading details...</span>
+                              </div>
+                            ) : (
+                              <div className="detail-content">
+                                {renderProposalDetails(selectedProposal)}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
@@ -302,304 +455,6 @@ function Governance() {
             </button>
           </div>
         </>
-      )}
-
-      {selectedProposal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Governance Action Details</h3>
-              <button className="close-btn" onClick={closeModal}>×</button>
-            </div>
-            <div className="modal-body">
-              <div className="detail-section">
-                <h4>Transaction Information</h4>
-                <div className="detail-row">
-                  <span className="detail-label">Transaction Hash:</span>
-                  <span className="detail-value hash">{selectedProposal.txHash}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Certificate Index:</span>
-                  <span className="detail-value">{selectedProposal.certIndex ?? 'N/A'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Type:</span>
-                  <span className="detail-value">{selectedProposal.type || 'Proposal'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Status:</span>
-                  <span className={`detail-value status-badge ${getStatusClass(selectedProposal)}`}>
-                    {selectedProposal.status || 'Active'}
-                  </span>
-                </div>
-              </div>
-
-              {(selectedProposal.deposit || selectedProposal.returnAddress) && (
-                <div className="detail-section">
-                  <h4>Financial Information</h4>
-                  {selectedProposal.deposit && (
-                    <div className="detail-row">
-                      <span className="detail-label">Deposit:</span>
-                      <span className="detail-value">{formatADA(selectedProposal.deposit)} ADA</span>
-                    </div>
-                  )}
-                  {selectedProposal.returnAddress && (
-                    <div className="detail-row">
-                      <span className="detail-label">Return Address:</span>
-                      <span className="detail-value hash">{selectedProposal.returnAddress}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {(selectedProposal.enactedEpoch || selectedProposal.expiredEpoch || selectedProposal.droppedEpoch) && (
-                <div className="detail-section">
-                  <h4>Lifecycle</h4>
-                  {selectedProposal.enactedEpoch !== null && selectedProposal.enactedEpoch !== undefined && (
-                    <div className="detail-row">
-                      <span className="detail-label">Enacted Epoch:</span>
-                      <span className="detail-value">{selectedProposal.enactedEpoch}</span>
-                    </div>
-                  )}
-                  {selectedProposal.expiredEpoch !== null && selectedProposal.expiredEpoch !== undefined && (
-                    <div className="detail-row">
-                      <span className="detail-label">Expired Epoch:</span>
-                      <span className="detail-value">{selectedProposal.expiredEpoch}</span>
-                    </div>
-                  )}
-                  {selectedProposal.droppedEpoch !== null && selectedProposal.droppedEpoch !== undefined && (
-                    <div className="detail-row">
-                      <span className="detail-label">Dropped Epoch:</span>
-                      <span className="detail-value">{selectedProposal.droppedEpoch}</span>
-                    </div>
-                  )}
-                  {selectedProposal.expiresAt && (
-                    <div className="detail-row">
-                      <span className="detail-label">Expires At:</span>
-                      <span className="detail-value">{selectedProposal.expiresAt}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {(selectedProposal.anchorUrl || selectedProposal.anchorHash || selectedProposal.votingAnchor) && (
-                <div className="detail-section">
-                  <h4>Anchor Information</h4>
-                  {selectedProposal.anchorUrl && (
-                    <div className="detail-row">
-                      <span className="detail-label">Anchor URL:</span>
-                      <a
-                        href={selectedProposal.anchorUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="detail-value anchor-link"
-                      >
-                        {selectedProposal.anchorUrl}
-                      </a>
-                    </div>
-                  )}
-                  {selectedProposal.anchorHash && (
-                    <div className="detail-row">
-                      <span className="detail-label">Anchor Hash:</span>
-                      <span className="detail-value hash">{selectedProposal.anchorHash}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {selectedProposal.voteCount && (
-                <div className="detail-section">
-                  <h4>Voting Summary</h4>
-                  <div className="detail-row">
-                    <span className="detail-label">Total Votes:</span>
-                    <span className="detail-value">{selectedProposal.voteCount.total}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Yes Votes:</span>
-                    <span className="detail-value" style={{color: '#10b981'}}>{selectedProposal.voteCount.yes}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">No Votes:</span>
-                    <span className="detail-value" style={{color: '#fca5a5'}}>{selectedProposal.voteCount.no}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Abstain Votes:</span>
-                    <span className="detail-value" style={{color: '#9ca3af'}}>{selectedProposal.voteCount.abstain}</span>
-                  </div>
-                </div>
-              )}
-
-              {selectedProposal.votes && selectedProposal.votes.length > 0 && (
-                <div className="detail-section">
-                  <h4>Votes ({selectedProposal.votes.length})</h4>
-                  <div style={{maxHeight: '300px', overflowY: 'auto'}}>
-                    <table className="gov-table" style={{fontSize: '0.85rem'}}>
-                      <thead>
-                        <tr>
-                          <th>Voter</th>
-                          <th>Vote</th>
-                          <th>Block</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedProposal.votes.map((vote, idx) => (
-                          <tr key={idx}>
-                            <td className="hash-cell" title={vote.voter || vote.drep_id}>
-                              {formatHash(vote.voter || vote.drep_id)}
-                            </td>
-                            <td>
-                              <span className={`status-badge ${
-                                vote.vote === 'yes' ? 'status-active' :
-                                vote.vote === 'no' ? 'status-dropped' :
-                                'status-expired'
-                              }`}>
-                                {vote.vote}
-                              </span>
-                            </td>
-                            <td>{vote.block_height || vote.block || '-'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {selectedProposal.metadata && selectedProposal.metadata.json_metadata && selectedProposal.metadata.json_metadata.body && (
-                <div className="detail-section">
-                  <h4>Proposal Information</h4>
-
-                  {Object.keys(selectedProposal.metadata.json_metadata.body).map((key) => {
-                    const value = selectedProposal.metadata.json_metadata.body[key];
-                    const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-
-                    // Skip empty values
-                    if (!value || (Array.isArray(value) && value.length === 0)) {
-                      return null;
-                    }
-
-                    // Handle references specially with clickable links
-                    if (key === 'references' && Array.isArray(value)) {
-                      return (
-                        <div className="detail-row detail-row-block" key={key}>
-                          <span className="detail-label">{label}:</span>
-                          <div className="detail-value detail-value-block">
-                            {value.map((ref, idx) => (
-                              <div key={idx} style={{marginBottom: '0.5rem'}}>
-                                {ref.uri ? (
-                                  <a href={ref.uri} target="_blank" rel="noopener noreferrer" className="anchor-link">
-                                    {ref.label || ref.uri}
-                                  </a>
-                                ) : (
-                                  <span>{ref.label || JSON.stringify(ref)}</span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // Handle authors array
-                    if (key === 'authors' && Array.isArray(value)) {
-                      return (
-                        <div className="detail-row detail-row-block" key={key}>
-                          <span className="detail-label">{label}:</span>
-                          <div className="detail-value detail-value-block">
-                            {value.map(author =>
-                              typeof author === 'object' ? author.name || JSON.stringify(author) : author
-                            ).join(', ')}
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // Handle long text fields (motivation, rationale, etc.)
-                    if (typeof value === 'string' && value.length > 500) {
-                      return (
-                        <div className="detail-row detail-row-block" key={key}>
-                          <span className="detail-label">{label}:</span>
-                          <div className="detail-value detail-value-block detail-value-scrollable">
-                            <pre className="metadata-text-content">{value}</pre>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // Handle regular text fields
-                    if (typeof value === 'string') {
-                      return (
-                        <div className="detail-row detail-row-block" key={key}>
-                          <span className="detail-label">{label}:</span>
-                          <div className="detail-value detail-value-block">{value}</div>
-                        </div>
-                      );
-                    }
-
-                    // Handle arrays
-                    if (Array.isArray(value)) {
-                      return (
-                        <div className="detail-row detail-row-block" key={key}>
-                          <span className="detail-label">{label}:</span>
-                          <div className="detail-value detail-value-block">
-                            {value.map((item, idx) => (
-                              <div key={idx} style={{marginBottom: '0.25rem'}}>
-                                {typeof item === 'object' ? JSON.stringify(item) : String(item)}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // Handle objects
-                    if (typeof value === 'object') {
-                      return (
-                        <div className="detail-row detail-row-block" key={key}>
-                          <span className="detail-label">{label}:</span>
-                          <div className="detail-value detail-value-block detail-value-scrollable">
-                            <pre className="metadata-text-content">{JSON.stringify(value, null, 2)}</pre>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    return null;
-                  })}
-                </div>
-              )}
-
-              {selectedProposal.metadata && (selectedProposal.metadata.url || selectedProposal.metadata.hash) && (
-                <div className="detail-section">
-                  <h4>Metadata Source</h4>
-
-                  {selectedProposal.metadata.url && (
-                    <div className="detail-row">
-                      <span className="detail-label">Metadata URL:</span>
-                      <a href={selectedProposal.metadata.url} target="_blank" rel="noopener noreferrer" className="detail-value anchor-link">
-                        {selectedProposal.metadata.url}
-                      </a>
-                    </div>
-                  )}
-
-                  {selectedProposal.metadata.hash && (
-                    <div className="detail-row">
-                      <span className="detail-label">Metadata Hash:</span>
-                      <span className="detail-value hash">{selectedProposal.metadata.hash}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {loadingDetails && (
-                <div className="detail-section" style={{textAlign: 'center', padding: '2rem'}}>
-                  <div className="spinner"></div>
-                  <p>Loading votes and metadata...</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

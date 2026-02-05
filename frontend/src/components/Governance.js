@@ -419,7 +419,10 @@ function Governance() {
                   <React.Fragment key={`${proposal.txHash}-${index}`}>
                     <tr
                       className={`gov-table-row ${selectedProposal?.txHash === proposal.txHash && selectedProposal?.certIndex === proposal.certIndex ? 'expanded' : ''}`}
-                      onClick={() => viewProposal(proposal)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        viewProposal(proposal);
+                      }}
                     >
                       <td className="hash-cell" title={proposal.txHash}>
                         <span className="expand-indicator">

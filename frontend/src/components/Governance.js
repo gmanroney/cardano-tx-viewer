@@ -54,8 +54,8 @@ function Governance() {
   };
 
   const viewProposal = async (proposal) => {
-    // Prevent concurrent clicks
-    if (processingClickRef.current) {
+    // Prevent concurrent clicks - check both ref and loading state
+    if (processingClickRef.current || loadingDetails) {
       console.error('[DEBUG] Click ignored - already processing');
       return;
     }

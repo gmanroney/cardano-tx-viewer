@@ -54,9 +54,11 @@ function Governance() {
   };
 
   const viewProposal = async (proposal) => {
-    // Prevent concurrent clicks - check both ref and loading state
-    if (processingClickRef.current || loadingDetails) {
-      console.error('[DEBUG] Click ignored - already processing');
+    const proposalKey = `${proposal.txHash}-${proposal.certIndex}`;
+
+    // Prevent concurrent clicks on same proposal
+    if (processingClickRef.current === proposalKey) {
+      console.error('[DEBUG] Click ignored - already processing this exact proposal');
       return;
     }
 
@@ -65,11 +67,12 @@ function Governance() {
       console.error('[DEBUG] Toggling off - closing proposal');
       setSelectedProposal(null);
       setLoadingDetails(false);
+      processingClickRef.current = null;
       return;
     }
 
     console.error('[DEBUG] Opening proposal:', proposal.txHash, proposal.certIndex);
-    processingClickRef.current = true;
+    processingClickRef.current = proposalKey;
 
     // Set selected immediately so row expands
     setSelectedProposal(proposal);
@@ -97,7 +100,7 @@ function Governance() {
     } finally {
       console.error('[DEBUG] Setting loadingDetails to false');
       setLoadingDetails(false);
-      processingClickRef.current = false;
+      processingClickRef.current = null;
     }
   };
 

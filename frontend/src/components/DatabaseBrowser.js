@@ -105,13 +105,13 @@ function DatabaseBrowser() {
               return (
                 <tr key={tx._id}>
                   <td className="hash-cell" title={tx.hash}>
-                    {formatHash(tx.hash)}
+                    {formatHash(tx.hash || 'N/A')}
                   </td>
-                  <td>{tx.blockHeight.toLocaleString()}</td>
-                  <td>{tx.slot.toLocaleString()}</td>
-                  <td>{adaOutput ? formatADA(adaOutput.quantity) : '0'}</td>
-                  <td>{formatADA(tx.fees)}</td>
-                  <td>{tx.size.toLocaleString()} B</td>
+                  <td>{tx.blockHeight ? tx.blockHeight.toLocaleString() : '-'}</td>
+                  <td>{tx.slot ? tx.slot.toLocaleString() : '-'}</td>
+                  <td>{adaOutput ? formatADA(adaOutput.quantity) : '-'}</td>
+                  <td>{tx.fees ? formatADA(tx.fees) : '-'}</td>
+                  <td>{tx.size ? `${tx.size.toLocaleString()} B` : '-'}</td>
                   <td>
                     <button
                       className="view-btn"

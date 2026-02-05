@@ -129,12 +129,13 @@
 
 .db-table td {
   padding: 0.8rem 1rem;
+  color: #e0e6ed;
 }
 
 .hash-cell {
-  font-family: monospace;
+  font-family: 'SF Mono', Monaco, monospace;
   font-size: 0.85rem;
-  color: #667eea;
+  color: #3b9dff !important;
   font-weight: 600;
 }
 

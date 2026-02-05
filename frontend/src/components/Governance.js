@@ -443,29 +443,14 @@ function Governance() {
                       <tr className="detail-row-expanded">
                         <td colSpan="5">
                           <div className="detail-panel">
-                            <div style={{padding: '20px', background: '#e3f2fd', border: '2px solid #2196f3'}}>
-                              <h3 style={{margin: '0 0 10px 0', color: '#1976d2'}}>Detail Panel Test</h3>
-                              <p style={{margin: '5px 0'}}><strong>TX Hash:</strong> {selectedProposal?.txHash || 'N/A'}</p>
-                              <p style={{margin: '5px 0'}}><strong>Cert Index:</strong> {selectedProposal?.certIndex ?? 'N/A'}</p>
-                              <p style={{margin: '5px 0'}}><strong>Type:</strong> {selectedProposal?.type || 'N/A'}</p>
-                              <p style={{margin: '5px 0'}}><strong>Status:</strong> {selectedProposal?.status || 'N/A'}</p>
-                              <p style={{margin: '5px 0'}}><strong>Loading:</strong> {loadingDetails ? 'YES' : 'NO'}</p>
-                              <p style={{margin: '5px 0'}}><strong>Has Metadata:</strong> {selectedProposal?.metadata ? 'YES' : 'NO'}</p>
-                              {loadingDetails && (
-                                <div className="detail-loading">
-                                  <div className="spinner-small"></div>
-                                  <span>Loading details...</span>
-                                </div>
-                              )}
-                              {!loadingDetails && (
-                                <div style={{marginTop: '15px', padding: '10px', background: '#fff', border: '1px solid #ddd'}}>
-                                  <h4>Full Proposal Data:</h4>
-                                  <pre style={{fontSize: '11px', maxHeight: '300px', overflow: 'auto'}}>
-                                    {JSON.stringify(selectedProposal, null, 2)}
-                                  </pre>
-                                </div>
-                              )}
-                            </div>
+                            {loadingDetails ? (
+                              <div className="detail-loading">
+                                <div className="spinner-small"></div>
+                                <span>Loading details...</span>
+                              </div>
+                            ) : (
+                              renderProposalDetails(selectedProposal)
+                            )}
                           </div>
                         </td>
                       </tr>

@@ -9,6 +9,8 @@ function DatabaseBrowser() {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({});
   const [loading, setLoading] = useState(false);
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
 
   useEffect(() => {
     fetchTransactions();
@@ -57,6 +59,55 @@ function DatabaseBrowser() {
     return `${hash.substring(0, 10)}...${hash.substring(hash.length - 10)}`;
   };
 
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field) => {
+    if (sortField !== field) return '⇅';
+    return sortDirection === 'asc' ? '↑' : '↓';
+  };
+
+  // Apply sorting to transactions
+  const sortedTransactions = sortField ? [...transactions].sort((a, b) => {
+    let aVal, bVal;
+
+    switch(sortField) {
+      case 'block':
+        aVal = a.blockHeight || 0;
+        bVal = b.blockHeight || 0;
+        break;
+      case 'slot':
+        aVal = a.slot || 0;
+        bVal = b.slot || 0;
+        break;
+      case 'amount':
+        aVal = parseInt(a.outputAmount?.find(o => o.unit === 'lovelace')?.quantity || 0);
+        bVal = parseInt(b.outputAmount?.find(o => o.unit === 'lovelace')?.quantity || 0);
+        break;
+      case 'fees':
+        aVal = parseInt(a.fees || 0);
+        bVal = parseInt(b.fees || 0);
+        break;
+      case 'size':
+        aVal = a.size || 0;
+        bVal = b.size || 0;
+        break;
+      default:
+        aVal = a[sortField];
+        bVal = b[sortField];
+    }
+
+    if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  }) : transactions;
+
   return (
     <div className="db-browser">
       <div className="db-header">
@@ -90,17 +141,29 @@ function DatabaseBrowser() {
         <table className="db-table">
           <thead>
             <tr>
-              <th>Hash</th>
-              <th>Block</th>
-              <th>Slot</th>
-              <th>Amount (ADA)</th>
-              <th>Fees (ADA)</th>
-              <th>Size</th>
+              <th onClick={() => handleSort('hash')} style={{cursor: 'pointer'}}>
+                Hash {getSortIcon('hash')}
+              </th>
+              <th onClick={() => handleSort('block')} style={{cursor: 'pointer'}}>
+                Block {getSortIcon('block')}
+              </th>
+              <th onClick={() => handleSort('slot')} style={{cursor: 'pointer'}}>
+                Slot {getSortIcon('slot')}
+              </th>
+              <th onClick={() => handleSort('amount')} style={{cursor: 'pointer'}}>
+                Amount (ADA) {getSortIcon('amount')}
+              </th>
+              <th onClick={() => handleSort('fees')} style={{cursor: 'pointer'}}>
+                Fees (ADA) {getSortIcon('fees')}
+              </th>
+              <th onClick={() => handleSort('size')} style={{cursor: 'pointer'}}>
+                Size {getSortIcon('size')}
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {transactions.map((tx) => {
+            {sortedTransactions.map((tx) => {
               const adaOutput = tx.outputAmount?.find(o => o.unit === 'lovelace');
               return (
                 <tr key={tx._id}>

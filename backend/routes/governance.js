@@ -13,6 +13,18 @@ router.get('/proposals', async (req, res) => {
   }
 });
 
+// Get full details for a specific proposal (including votes and metadata)
+router.get('/proposals/:txHash/:certIndex', async (req, res) => {
+  try {
+    const { txHash, certIndex } = req.params;
+    const details = await governanceService.getProposalDetails(txHash, parseInt(certIndex));
+    res.json(details);
+  } catch (error) {
+    console.error('Error in GET /governance/proposals/:txHash/:certIndex:', error);
+    res.status(500).json({ error: 'Failed to fetch proposal details', message: error.message });
+  }
+});
+
 // Get votes for a specific proposal
 router.get('/proposals/:txHash/:certIndex/votes', async (req, res) => {
   try {

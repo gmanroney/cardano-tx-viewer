@@ -9,6 +9,9 @@ function Governance() {
   const [selectedProposal, setSelectedProposal] = useState(null);
   const [filter, setFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const itemsPerPage = 20;
 
   useEffect(() => {
@@ -49,18 +52,62 @@ function Governance() {
     return (parseInt(lovelace) / 1000000).toFixed(2);
   };
 
-  const viewProposal = (proposal) => {
+  const viewProposal = async (proposal) => {
+    setLoadingDetails(true);
     setSelectedProposal(proposal);
+
+    try {
+      // Fetch detailed proposal information including votes and metadata
+      const response = await axios.get(`/api/governance/proposals/${proposal.txHash}/${proposal.certIndex}`);
+      setSelectedProposal(response.data);
+    } catch (err) {
+      console.error('Error fetching proposal details:', err);
+      // Keep the basic proposal data if detailed fetch fails
+    } finally {
+      setLoadingDetails(false);
+    }
   };
 
   const closeModal = () => {
     setSelectedProposal(null);
   };
 
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field) => {
+    if (sortField !== field) return '⇅';
+    return sortDirection === 'asc' ? '↑' : '↓';
+  };
+
   const proposals = governanceData?.proposals || [];
-  const filteredProposals = filter === 'all'
+  let filteredProposals = filter === 'all'
     ? proposals
     : proposals.filter(p => p.status?.toLowerCase().includes(filter.toLowerCase()));
+
+  // Apply sorting
+  if (sortField) {
+    filteredProposals = [...filteredProposals].sort((a, b) => {
+      let aVal = a[sortField];
+      let bVal = b[sortField];
+
+      // Handle different data types
+      if (sortField === 'deposit') {
+        aVal = parseInt(aVal) || 0;
+        bVal = parseInt(bVal) || 0;
+      }
+
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
 
   const totalPages = Math.ceil(filteredProposals.length / itemsPerPage);
   const paginatedProposals = filteredProposals.slice(
@@ -191,11 +238,21 @@ function Governance() {
             <table className="gov-table">
               <thead>
                 <tr>
-                  <th>Transaction Hash</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  <th>Deposit (ADA)</th>
-                  <th>Cert Index</th>
+                  <th onClick={() => handleSort('txHash')} style={{cursor: 'pointer'}}>
+                    Transaction Hash {getSortIcon('txHash')}
+                  </th>
+                  <th onClick={() => handleSort('type')} style={{cursor: 'pointer'}}>
+                    Type {getSortIcon('type')}
+                  </th>
+                  <th onClick={() => handleSort('status')} style={{cursor: 'pointer'}}>
+                    Status {getSortIcon('status')}
+                  </th>
+                  <th onClick={() => handleSort('deposit')} style={{cursor: 'pointer'}}>
+                    Deposit (ADA) {getSortIcon('deposit')}
+                  </th>
+                  <th onClick={() => handleSort('certIndex')} style={{cursor: 'pointer'}}>
+                    Cert Index {getSortIcon('certIndex')}
+                  </th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -350,17 +407,96 @@ function Governance() {
                 </div>
               )}
 
-              {selectedProposal.metadata && (
+              {selectedProposal.voteCount && (
                 <div className="detail-section">
-                  <h4>Metadata</h4>
-                  <pre className="metadata-pre">{JSON.stringify(selectedProposal.metadata, null, 2)}</pre>
+                  <h4>Voting Summary</h4>
+                  <div className="detail-row">
+                    <span className="detail-label">Total Votes:</span>
+                    <span className="detail-value">{selectedProposal.voteCount.total}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Yes Votes:</span>
+                    <span className="detail-value" style={{color: '#10b981'}}>{selectedProposal.voteCount.yes}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">No Votes:</span>
+                    <span className="detail-value" style={{color: '#fca5a5'}}>{selectedProposal.voteCount.no}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Abstain Votes:</span>
+                    <span className="detail-value" style={{color: '#9ca3af'}}>{selectedProposal.voteCount.abstain}</span>
+                  </div>
                 </div>
               )}
 
-              <div className="detail-section">
-                <h4>Raw Data</h4>
-                <pre className="metadata-pre">{JSON.stringify(selectedProposal, null, 2)}</pre>
-              </div>
+              {selectedProposal.votes && selectedProposal.votes.length > 0 && (
+                <div className="detail-section">
+                  <h4>Votes ({selectedProposal.votes.length})</h4>
+                  <div style={{maxHeight: '300px', overflowY: 'auto'}}>
+                    <table className="gov-table" style={{fontSize: '0.85rem'}}>
+                      <thead>
+                        <tr>
+                          <th>Voter</th>
+                          <th>Vote</th>
+                          <th>Block</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedProposal.votes.map((vote, idx) => (
+                          <tr key={idx}>
+                            <td className="hash-cell" title={vote.voter || vote.drep_id}>
+                              {formatHash(vote.voter || vote.drep_id)}
+                            </td>
+                            <td>
+                              <span className={`status-badge ${
+                                vote.vote === 'yes' ? 'status-active' :
+                                vote.vote === 'no' ? 'status-dropped' :
+                                'status-expired'
+                              }`}>
+                                {vote.vote}
+                              </span>
+                            </td>
+                            <td>{vote.block_height || vote.block || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {selectedProposal.metadata && (
+                <div className="detail-section">
+                  <h4>Metadata</h4>
+                  {selectedProposal.metadata.url && (
+                    <div className="detail-row">
+                      <span className="detail-label">URL:</span>
+                      <a href={selectedProposal.metadata.url} target="_blank" rel="noopener noreferrer" className="detail-value anchor-link">
+                        {selectedProposal.metadata.url}
+                      </a>
+                    </div>
+                  )}
+                  {selectedProposal.metadata.hash && (
+                    <div className="detail-row">
+                      <span className="detail-label">Hash:</span>
+                      <span className="detail-value hash">{selectedProposal.metadata.hash}</span>
+                    </div>
+                  )}
+                  {selectedProposal.metadata.body && (
+                    <>
+                      <h5 style={{marginTop: '1rem', marginBottom: '0.5rem', color: '#a0aec0'}}>Metadata Body:</h5>
+                      <pre className="metadata-pre">{JSON.stringify(selectedProposal.metadata.body, null, 2)}</pre>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {loadingDetails && (
+                <div className="detail-section" style={{textAlign: 'center', padding: '2rem'}}>
+                  <div className="spinner"></div>
+                  <p>Loading votes and metadata...</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

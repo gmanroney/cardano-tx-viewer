@@ -4,6 +4,7 @@ import './App.css';
 import TransactionCard from './components/TransactionCard';
 import Stats from './components/Stats';
 import Dashboard from './components/Dashboard';
+import DatabaseBrowser from './components/DatabaseBrowser';
 
 function App() {
   const [transactions, setTransactions] = useState([]);
@@ -12,6 +13,7 @@ function App() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [showDatabaseBrowser, setShowDatabaseBrowser] = useState(false);
   const loaderRef = useRef(null);
 
   const fetchTransactions = async (pageNum) => {
@@ -98,13 +100,26 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Cardano Transaction Viewer</h1>
-        <p>Real-time Cardano blockchain transactions</p>
+        <div>
+          <h1>Cardano Transaction Viewer</h1>
+          <p>Real-time Cardano blockchain transactions</p>
+        </div>
+        <button
+          className="db-toggle-btn"
+          onClick={() => setShowDatabaseBrowser(!showDatabaseBrowser)}
+        >
+          {showDatabaseBrowser ? '📊 View Dashboard' : '🗄️ Database Browser'}
+        </button>
       </header>
 
-      {stats && <Dashboard stats={stats} />}
+      {!showDatabaseBrowser && (
+        <>
+          {stats && <Dashboard stats={stats} />}
+          {stats && <Stats stats={stats} onRefresh={handleManualFetch} />}
+        </>
+      )}
 
-      {stats && <Stats stats={stats} onRefresh={handleManualFetch} />}
+      {showDatabaseBrowser && <DatabaseBrowser />}
 
       {error && (
         <div className="error-message">
@@ -112,7 +127,8 @@ function App() {
         </div>
       )}
 
-      <main className="transactions-container">
+      {!showDatabaseBrowser && (
+        <main className="transactions-container">
         {transactions.length === 0 && !loading && (
           <div className="empty-state">
             <p>No transactions found. Click "Fetch Now" to load transactions.</p>
@@ -137,7 +153,8 @@ function App() {
             <p>No more transactions to load</p>
           </div>
         )}
-      </main>
+        </main>
+      )}
     </div>
   );
 }

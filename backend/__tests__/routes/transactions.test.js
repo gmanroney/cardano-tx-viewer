@@ -1,8 +1,21 @@
 const request = require('supertest');
 const express = require('express');
-const transactionRouter = require('../../routes/transactions');
 
+// Mock services BEFORE requiring the router
 jest.mock('../../services/transactionService');
+
+// Mock blockfrost service to avoid API key requirement
+jest.mock('../../services/blockfrostService', () => ({
+  api: {
+    blocksLatest: jest.fn(),
+    blocksTxs: jest.fn(),
+    txs: jest.fn(),
+    blocks: jest.fn(),
+    epochsLatest: jest.fn()
+  }
+}));
+
+const transactionRouter = require('../../routes/transactions');
 const transactionService = require('../../services/transactionService');
 
 const app = express();
@@ -83,7 +96,6 @@ describe('Transaction Routes', () => {
   describe('POST /api/transactions/fetch', () => {
     it('should fetch new transactions', async () => {
       const mockResult = {
-        success: true,
         newTransactions: 5,
         totalTransactions: 105
       };
@@ -94,7 +106,9 @@ describe('Transaction Routes', () => {
         .post('/api/transactions/fetch')
         .expect(200);
 
-      expect(response.body.newTransactions).toBe(5);
+      expect(response.body.success).toBe(true);
+      expect(response.body.result.newTransactions).toBe(5);
+      expect(response.body.result.totalTransactions).toBe(105);
     });
   });
 });

@@ -1,9 +1,23 @@
 const request = require('supertest');
 const express = require('express');
-const governanceRouter = require('../../routes/governance');
 
-// Mock the governance service
+// Mock the governance service BEFORE requiring the router
 jest.mock('../../services/governanceService');
+
+// Mock blockfrost service to avoid API key requirement
+jest.mock('../../services/blockfrostService', () => ({
+  api: {
+    epochsLatest: jest.fn(),
+    governance: {
+      proposals: jest.fn(),
+      proposal: jest.fn(),
+      proposalVotes: jest.fn(),
+      proposalMetadata: jest.fn()
+    }
+  }
+}));
+
+const governanceRouter = require('../../routes/governance');
 const governanceService = require('../../services/governanceService');
 
 const app = express();

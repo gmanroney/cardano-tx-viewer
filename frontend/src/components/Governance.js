@@ -465,67 +465,107 @@ function Governance() {
                 </div>
               )}
 
-              {selectedProposal.metadata && selectedProposal.metadata.body && (
+              {selectedProposal.metadata && selectedProposal.metadata.json_metadata && selectedProposal.metadata.json_metadata.body && (
                 <div className="detail-section">
                   <h4>Proposal Information</h4>
 
-                  {selectedProposal.metadata.body.title && (
-                    <div className="detail-row">
-                      <span className="detail-label">Title:</span>
-                      <span className="detail-value">{selectedProposal.metadata.body.title}</span>
-                    </div>
-                  )}
+                  {Object.keys(selectedProposal.metadata.json_metadata.body).map((key) => {
+                    const value = selectedProposal.metadata.json_metadata.body[key];
+                    const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
 
-                  {selectedProposal.metadata.body.abstract && (
-                    <div className="detail-row">
-                      <span className="detail-label">Abstract:</span>
-                      <span className="detail-value">{selectedProposal.metadata.body.abstract}</span>
-                    </div>
-                  )}
+                    // Skip empty values
+                    if (!value || (Array.isArray(value) && value.length === 0)) {
+                      return null;
+                    }
 
-                  {selectedProposal.metadata.body.motivation && (
-                    <div className="detail-row">
-                      <span className="detail-label">Motivation:</span>
-                      <span className="detail-value">{selectedProposal.metadata.body.motivation}</span>
-                    </div>
-                  )}
+                    // Handle references specially with clickable links
+                    if (key === 'references' && Array.isArray(value)) {
+                      return (
+                        <div className="detail-row detail-row-block" key={key}>
+                          <span className="detail-label">{label}:</span>
+                          <div className="detail-value detail-value-block">
+                            {value.map((ref, idx) => (
+                              <div key={idx} style={{marginBottom: '0.5rem'}}>
+                                {ref.uri ? (
+                                  <a href={ref.uri} target="_blank" rel="noopener noreferrer" className="anchor-link">
+                                    {ref.label || ref.uri}
+                                  </a>
+                                ) : (
+                                  <span>{ref.label || JSON.stringify(ref)}</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
 
-                  {selectedProposal.metadata.body.rationale && (
-                    <div className="detail-row">
-                      <span className="detail-label">Rationale:</span>
-                      <span className="detail-value">{selectedProposal.metadata.body.rationale}</span>
-                    </div>
-                  )}
+                    // Handle authors array
+                    if (key === 'authors' && Array.isArray(value)) {
+                      return (
+                        <div className="detail-row detail-row-block" key={key}>
+                          <span className="detail-label">{label}:</span>
+                          <div className="detail-value detail-value-block">
+                            {value.map(author =>
+                              typeof author === 'object' ? author.name || JSON.stringify(author) : author
+                            ).join(', ')}
+                          </div>
+                        </div>
+                      );
+                    }
 
-                  {selectedProposal.metadata.body.authors && selectedProposal.metadata.body.authors.length > 0 && (
-                    <div className="detail-row">
-                      <span className="detail-label">Authors:</span>
-                      <span className="detail-value">
-                        {selectedProposal.metadata.body.authors.map(author =>
-                          typeof author === 'object' ? author.name || JSON.stringify(author) : author
-                        ).join(', ')}
-                      </span>
-                    </div>
-                  )}
+                    // Handle long text fields (motivation, rationale, etc.)
+                    if (typeof value === 'string' && value.length > 500) {
+                      return (
+                        <div className="detail-row detail-row-block" key={key}>
+                          <span className="detail-label">{label}:</span>
+                          <div className="detail-value detail-value-block detail-value-scrollable">
+                            <pre className="metadata-text-content">{value}</pre>
+                          </div>
+                        </div>
+                      );
+                    }
 
-                  {selectedProposal.metadata.body.references && selectedProposal.metadata.body.references.length > 0 && (
-                    <div className="detail-row">
-                      <span className="detail-label">References:</span>
-                      <span className="detail-value">
-                        {selectedProposal.metadata.body.references.map((ref, idx) => (
-                          <span key={idx}>
-                            {ref.uri ? (
-                              <a href={ref.uri} target="_blank" rel="noopener noreferrer" className="anchor-link" style={{display: 'block', marginBottom: '0.5rem'}}>
-                                {ref.label || ref.uri}
-                              </a>
-                            ) : (
-                              <span style={{display: 'block', marginBottom: '0.5rem'}}>{ref.label || JSON.stringify(ref)}</span>
-                            )}
-                          </span>
-                        ))}
-                      </span>
-                    </div>
-                  )}
+                    // Handle regular text fields
+                    if (typeof value === 'string') {
+                      return (
+                        <div className="detail-row detail-row-block" key={key}>
+                          <span className="detail-label">{label}:</span>
+                          <div className="detail-value detail-value-block">{value}</div>
+                        </div>
+                      );
+                    }
+
+                    // Handle arrays
+                    if (Array.isArray(value)) {
+                      return (
+                        <div className="detail-row detail-row-block" key={key}>
+                          <span className="detail-label">{label}:</span>
+                          <div className="detail-value detail-value-block">
+                            {value.map((item, idx) => (
+                              <div key={idx} style={{marginBottom: '0.25rem'}}>
+                                {typeof item === 'object' ? JSON.stringify(item) : String(item)}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // Handle objects
+                    if (typeof value === 'object') {
+                      return (
+                        <div className="detail-row detail-row-block" key={key}>
+                          <span className="detail-label">{label}:</span>
+                          <div className="detail-value detail-value-block detail-value-scrollable">
+                            <pre className="metadata-text-content">{JSON.stringify(value, null, 2)}</pre>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  })}
                 </div>
               )}
 

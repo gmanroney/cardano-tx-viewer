@@ -5,6 +5,7 @@ const cron = require('node-cron');
 require('dotenv').config();
 
 const transactionRoutes = require('./routes/transactions');
+const governanceRoutes = require('./routes/governance');
 const transactionService = require('./services/transactionService');
 
 const app = express();
@@ -46,6 +47,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/governance', governanceRoutes);
 
 // Schedule periodic transaction fetching
 const fetchInterval = process.env.FETCH_INTERVAL_SECONDS || 30;

@@ -253,12 +253,14 @@
 }
 
 .modal-body pre {
-  background: #f8f9fa;
+  background: #0f1419;
+  color: #e0e6ed;
   padding: 1rem;
   border-radius: 8px;
   overflow-x: auto;
   font-size: 0.85rem;
   line-height: 1.5;
+  border: 1px solid #2d3748;
 }
 
 /* Responsive design */

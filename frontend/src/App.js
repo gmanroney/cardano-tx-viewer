@@ -5,6 +5,7 @@ import TransactionCard from './components/TransactionCard';
 import Stats from './components/Stats';
 import Dashboard from './components/Dashboard';
 import DatabaseBrowser from './components/DatabaseBrowser';
+import Governance from './components/Governance';
 
 function App() {
   const [transactions, setTransactions] = useState([]);
@@ -13,7 +14,7 @@ function App() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [showDatabaseBrowser, setShowDatabaseBrowser] = useState(false);
+  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, database, governance
   const loaderRef = useRef(null);
 
   const fetchTransactions = async (pageNum) => {
@@ -100,26 +101,44 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <div>
-          <h1>Cardano Transaction Viewer</h1>
-          <p>Real-time Cardano blockchain transactions</p>
+        <div className="header-content">
+          <div className="header-title">
+            <h1>Cardano Transaction Viewer</h1>
+            <p>Real-time Cardano blockchain transactions</p>
+          </div>
+          <nav className="nav-menu">
+            <button
+              className={`nav-btn ${currentView === 'dashboard' ? 'active' : ''}`}
+              onClick={() => setCurrentView('dashboard')}
+            >
+              📊 Dashboard
+            </button>
+            <button
+              className={`nav-btn ${currentView === 'database' ? 'active' : ''}`}
+              onClick={() => setCurrentView('database')}
+            >
+              🗄️ Database
+            </button>
+            <button
+              className={`nav-btn ${currentView === 'governance' ? 'active' : ''}`}
+              onClick={() => setCurrentView('governance')}
+            >
+              🏛️ Governance
+            </button>
+          </nav>
         </div>
-        <button
-          className="db-toggle-btn"
-          onClick={() => setShowDatabaseBrowser(!showDatabaseBrowser)}
-        >
-          {showDatabaseBrowser ? '📊 View Dashboard' : '🗄️ Database Browser'}
-        </button>
       </header>
 
-      {!showDatabaseBrowser && (
+      {currentView === 'dashboard' && (
         <>
           {stats && <Dashboard stats={stats} />}
           {stats && <Stats stats={stats} onRefresh={handleManualFetch} />}
         </>
       )}
 
-      {showDatabaseBrowser && <DatabaseBrowser />}
+      {currentView === 'database' && <DatabaseBrowser />}
+
+      {currentView === 'governance' && <Governance />}
 
       {error && (
         <div className="error-message">
@@ -127,7 +146,7 @@ function App() {
         </div>
       )}
 
-      {!showDatabaseBrowser && (
+      {currentView === 'dashboard' && (
         <main className="transactions-container">
         {transactions.length === 0 && !loading && (
           <div className="empty-state">

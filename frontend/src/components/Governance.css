@@ -1,0 +1,416 @@
+.governance-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1rem 1rem;
+}
+
+.governance-header {
+  background: #1a1f29;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.governance-header h2 {
+  margin: 0 0 0.5rem 0;
+  color: #e0e6ed;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.governance-header p {
+  margin: 0;
+  color: #a0aec0;
+  font-size: 0.9rem;
+}
+
+.governance-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.governance-stats .stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.governance-stats .label {
+  font-size: 0.75rem;
+  color: #a0aec0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.governance-stats .value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #3b9dff;
+}
+
+.governance-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.6rem 1.2rem;
+  background: #1a1f29;
+  border: 1px solid #2d3748;
+  color: #a0aec0;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  border-color: #3b9dff;
+  color: #3b9dff;
+}
+
+.filter-btn.active {
+  background: #1e3a5f;
+  border-color: #3b9dff;
+  color: #3b9dff;
+}
+
+.proposals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.proposal-card {
+  background: #1a1f29;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.proposal-card:hover {
+  border-color: #3b9dff;
+  box-shadow: 0 0 0 3px rgba(59, 157, 255, 0.1);
+}
+
+.proposal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #2d3748;
+}
+
+.proposal-type {
+  font-weight: 600;
+  color: #e0e6ed;
+  font-size: 0.95rem;
+}
+
+.proposal-status {
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-active {
+  background: #064e3b;
+  color: #10b981;
+  border: 1px solid #065f46;
+}
+
+.status-enacted {
+  background: #1e3a5f;
+  color: #3b9dff;
+  border: 1px solid #2d5279;
+}
+
+.status-expired {
+  background: #374151;
+  color: #9ca3af;
+  border: 1px solid #4b5563;
+}
+
+.status-dropped {
+  background: #7f1d1d;
+  color: #fca5a5;
+  border: 1px solid #991b1b;
+}
+
+.status-error {
+  background: #78350f;
+  color: #fbbf24;
+  border: 1px solid #92400e;
+}
+
+.proposal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.proposal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.info-row .label {
+  font-size: 0.75rem;
+  color: #a0aec0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-row .value {
+  color: #e0e6ed;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.info-row .value.hash {
+  font-family: 'SF Mono', Monaco, monospace;
+  color: #3b9dff;
+  font-size: 0.85rem;
+}
+
+.anchor-link {
+  color: #3b9dff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: color 0.2s;
+}
+
+.anchor-link:hover {
+  color: #60b0ff;
+  text-decoration: underline;
+}
+
+.view-details-btn {
+  padding: 0.7rem 1rem;
+  background: #3b9dff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-details-btn:hover {
+  background: #2b8df0;
+  box-shadow: 0 0 0 3px rgba(59, 157, 255, 0.1);
+}
+
+.governance-footer {
+  background: #1a1f29;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.governance-footer p {
+  margin: 0;
+  color: #a0aec0;
+  font-size: 0.85rem;
+}
+
+.refresh-btn,
+.retry-btn {
+  padding: 0.6rem 1.2rem;
+  background: #3b9dff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover,
+.retry-btn:hover {
+  background: #2b8df0;
+}
+
+.governance-loading,
+.governance-error {
+  background: #1a1f29;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  color: #a0aec0;
+}
+
+.governance-loading .spinner {
+  border: 3px solid #2d3748;
+  border-top: 3px solid #3b9dff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.governance-error h3 {
+  color: #fbbf24;
+  margin-bottom: 1rem;
+}
+
+.governance-error p {
+  margin-bottom: 1rem;
+}
+
+.error-note {
+  font-size: 0.85rem;
+  color: #718096;
+  font-style: italic;
+}
+
+.empty-state {
+  background: #1a1f29;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  color: #a0aec0;
+}
+
+.empty-state p {
+  margin-bottom: 0.5rem;
+}
+
+.empty-note {
+  font-size: 0.85rem;
+  color: #718096;
+  margin-top: 1rem;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: #1a1f29;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #2d3748;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #e0e6ed;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #a0aec0;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #2d3748;
+  color: #e0e6ed;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.modal-body pre {
+  background: #0f1419;
+  color: #e0e6ed;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  border: 1px solid #2d3748;
+}
+
+@media (max-width: 768px) {
+  .governance-header {
+    flex-direction: column;
+  }
+
+  .governance-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .proposals-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .governance-footer {
+    flex-direction: column;
+    text-align: center;
+  }
+}

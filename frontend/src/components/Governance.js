@@ -21,6 +21,10 @@ function Governance() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    console.error('[DEBUG] selectedProposal changed:', selectedProposal?.txHash, selectedProposal?.certIndex);
+  }, [selectedProposal]);
+
   const fetchGovernanceData = async () => {
     try {
       setLoading(true);
@@ -87,6 +91,8 @@ function Governance() {
         console.error('[DEBUG] Updating with API data, prevSelected:', prevSelected?.txHash);
         if (prevSelected?.txHash === proposal.txHash && prevSelected?.certIndex === proposal.certIndex) {
           console.error('[DEBUG] Updating selectedProposal with full data');
+          console.error('[DEBUG] Response data txHash:', response.data?.txHash);
+          console.error('[DEBUG] Response data certIndex:', response.data?.certIndex);
           return response.data;
         }
         console.error('[DEBUG] Not updating - different proposal selected');
@@ -98,6 +104,7 @@ function Governance() {
     } finally {
       console.error('[DEBUG] Setting loadingDetails to false');
       setLoadingDetails(false);
+      console.error('[DEBUG] After setting loadingDetails, selectedProposal should still be set');
     }
   };
 

@@ -21,10 +21,6 @@ function Governance() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    console.error('[DEBUG] selectedProposal changed:', selectedProposal?.txHash, selectedProposal?.certIndex);
-  }, [selectedProposal]);
-
   const fetchGovernanceData = async () => {
     try {
       setLoading(true);
@@ -61,20 +57,16 @@ function Governance() {
     // Aggressive debounce: ignore clicks within 500ms of last click
     const now = Date.now();
     if (now - lastClickTimeRef.current < 500) {
-      console.error('[DEBUG] Click ignored - debounced (within 500ms of last click)');
       return;
     }
     lastClickTimeRef.current = now;
 
     // Toggle: if clicking the same row, close it
     if (selectedProposal?.txHash === proposal.txHash && selectedProposal?.certIndex === proposal.certIndex) {
-      console.error('[DEBUG] Toggling off - closing proposal');
       setSelectedProposal(null);
       setLoadingDetails(false);
       return;
     }
-
-    console.error('[DEBUG] Opening proposal:', proposal.txHash, proposal.certIndex);
 
     // Set selected immediately so row expands
     setSelectedProposal(proposal);
@@ -82,28 +74,21 @@ function Governance() {
 
     try {
       // Fetch detailed proposal information including votes and metadata
-      console.error('[DEBUG] Fetching details from API...');
       const response = await axios.get(`/api/governance/proposals/${proposal.txHash}/${proposal.certIndex}`);
-      console.error('[DEBUG] API response received, status:', response.status);
 
       // Only update if this proposal is still selected (user didn't click another row)
       setSelectedProposal(prevSelected => {
-        console.error('[DEBUG] Updating with API data, prevSelected:', prevSelected?.txHash);
         if (prevSelected?.txHash === proposal.txHash && prevSelected?.certIndex === proposal.certIndex) {
-          console.error('[DEBUG] Merging API data with existing proposal');
           // Merge API response with existing proposal to preserve txHash and certIndex
           return { ...prevSelected, ...response.data };
         }
-        console.error('[DEBUG] Not updating - different proposal selected');
         return prevSelected;
       });
     } catch (err) {
-      console.error('[DEBUG] Error fetching proposal details:', err.message || err);
+      console.error('Error fetching proposal details:', err);
       // Keep the basic proposal data if detailed fetch fails
     } finally {
-      console.error('[DEBUG] Setting loadingDetails to false');
       setLoadingDetails(false);
-      console.error('[DEBUG] After setting loadingDetails, selectedProposal should still be set');
     }
   };
 

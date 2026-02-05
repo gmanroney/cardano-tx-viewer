@@ -53,33 +53,33 @@ function Governance() {
   };
 
   const viewProposal = async (proposal) => {
-    console.log('viewProposal called with:', proposal);
-    console.log('Current selectedProposal:', selectedProposal);
-
     // Toggle: if clicking the same row, close it
     if (selectedProposal?.txHash === proposal.txHash && selectedProposal?.certIndex === proposal.certIndex) {
-      console.log('Closing proposal - same row clicked');
       setSelectedProposal(null);
+      setLoadingDetails(false);
       return;
     }
 
-    console.log('Opening proposal...');
-    setLoadingDetails(true);
+    // Set selected immediately so row expands
     setSelectedProposal(proposal);
+    setLoadingDetails(true);
 
     try {
       // Fetch detailed proposal information including votes and metadata
-      console.log('Fetching details for:', proposal.txHash, proposal.certIndex);
       const response = await axios.get(`/api/governance/proposals/${proposal.txHash}/${proposal.certIndex}`);
-      console.log('Received detailed data:', response.data);
-      setSelectedProposal(response.data);
+
+      // Only update if this proposal is still selected (user didn't click another row)
+      setSelectedProposal(prevSelected => {
+        if (prevSelected?.txHash === proposal.txHash && prevSelected?.certIndex === proposal.certIndex) {
+          return response.data;
+        }
+        return prevSelected;
+      });
     } catch (err) {
       console.error('Error fetching proposal details:', err);
       // Keep the basic proposal data if detailed fetch fails
-      console.log('Keeping basic proposal data due to error');
     } finally {
       setLoadingDetails(false);
-      console.log('Loading complete, loadingDetails set to false');
     }
   };
 
@@ -139,8 +139,6 @@ function Governance() {
     if (!proposal) {
       return <div className="inline-details">No proposal data available</div>;
     }
-
-    console.log('Rendering proposal details:', proposal);
 
     return (
       <div className="inline-details">

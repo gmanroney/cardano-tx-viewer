@@ -53,6 +53,12 @@ function Governance() {
   };
 
   const viewProposal = async (proposal) => {
+    // Toggle: if clicking the same row, close it
+    if (selectedProposal?.txHash === proposal.txHash && selectedProposal?.certIndex === proposal.certIndex) {
+      setSelectedProposal(null);
+      return;
+    }
+
     setLoadingDetails(true);
     setSelectedProposal(proposal);
 

@@ -75,12 +75,15 @@
 }
 
 .stat-item .label {
-  color: #666;
+  color: #a0aec0;
   font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
 }
 
 .stat-item .value {
-  color: #667eea;
+  color: #3b9dff;
   font-weight: 700;
   font-size: 1.1rem;
 }
@@ -88,15 +91,15 @@
 .db-loading {
   text-align: center;
   padding: 2rem;
-  color: white;
+  color: #a0aec0;
   font-size: 1.2rem;
 }
 
 .db-table-container {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
+  background: #1a1f29;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow-x: auto;
   margin-bottom: 1rem;
 }
@@ -107,8 +110,9 @@
 }
 
 .db-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #0f1419;
+  color: #e0e6ed;
+  border-bottom: 2px solid #3b9dff;
 }
 
 .db-table th {
@@ -119,12 +123,13 @@
 }
 
 .db-table tbody tr {
-  border-bottom: 1px solid #f0f0f0;
-  transition: background 0.2s;
+  border-bottom: 1px solid #2d3748;
+  transition: all 0.2s;
 }
 
 .db-table tbody tr:hover {
-  background: #f8f9fa;
+  background: #0f1419;
+  border-color: #3b9dff;
 }
 
 .db-table td {
@@ -141,25 +146,26 @@
 
 .view-btn {
   padding: 0.4rem 1rem;
-  background: #667eea;
+  background: #3b9dff;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.85rem;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .view-btn:hover {
-  background: #764ba2;
+  background: #2b8df0;
+  box-shadow: 0 0 0 3px rgba(59, 157, 255, 0.1);
 }
 
 .db-pagination {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
+  background: #1a1f29;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
   padding: 1rem 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -167,26 +173,28 @@
 
 .db-pagination button {
   padding: 0.6rem 1.2rem;
-  background: #667eea;
+  background: #3b9dff;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .db-pagination button:hover:not(:disabled) {
-  background: #764ba2;
+  background: #2b8df0;
+  box-shadow: 0 0 0 3px rgba(59, 157, 255, 0.1);
 }
 
 .db-pagination button:disabled {
-  background: #ccc;
+  background: #2d3748;
+  color: #718096;
   cursor: not-allowed;
 }
 
 .db-pagination span {
-  color: white;
+  color: #e0e6ed;
   font-weight: 600;
 }
 

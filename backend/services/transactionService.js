@@ -101,11 +101,71 @@ class TransactionService {
       const latest = await Transaction.findOne().sort({ blockHeight: -1 }).lean();
       const oldest = await Transaction.findOne().sort({ blockHeight: 1 }).lean();
 
+      // Calculate aggregate metrics
+      const recentTransactions = await Transaction.find()
+        .sort({ blockHeight: -1 })
+        .limit(100)
+        .lean();
+
+      let totalADA = 0;
+      let totalFees = 0;
+      let smartContractCount = 0;
+      let nftMintCount = 0;
+      let delegationCount = 0;
+
+      recentTransactions.forEach(tx => {
+        // Calculate total ADA from output amounts
+        if (tx.outputAmount && tx.outputAmount.length > 0) {
+          const adaOutput = tx.outputAmount.find(output => output.unit === 'lovelace');
+          if (adaOutput) {
+            totalADA += parseInt(adaOutput.quantity) / 1000000;
+          }
+        }
+
+        // Sum fees
+        totalFees += parseInt(tx.fees) / 1000000;
+
+        // Count special transaction types
+        if (tx.validContract && tx.redeemerCount > 0) smartContractCount++;
+        if (tx.assetMintOrBurnCount > 0) nftMintCount++;
+        if (tx.delegationCount > 0) delegationCount++;
+      });
+
+      // Calculate transactions per minute (last 100 transactions)
+      let txPerMinute = 0;
+      if (recentTransactions.length >= 2) {
+        const firstTx = recentTransactions[recentTransactions.length - 1];
+        const lastTx = recentTransactions[0];
+        const timeDiff = (new Date(lastTx.fetchedAt) - new Date(firstTx.fetchedAt)) / 1000 / 60;
+        if (timeDiff > 0) {
+          txPerMinute = (recentTransactions.length / timeDiff).toFixed(2);
+        }
+      }
+
+      const avgFee = recentTransactions.length > 0 ? (totalFees / recentTransactions.length).toFixed(6) : 0;
+      const avgAmount = recentTransactions.length > 0 ? (totalADA / recentTransactions.length).toFixed(2) : 0;
+
       return {
         totalTransactions: total,
         latestBlock: latest ? latest.blockHeight : null,
         oldestBlock: oldest ? oldest.blockHeight : null,
-        lastFetchedAt: latest ? latest.fetchedAt : null
+        lastFetchedAt: latest ? latest.fetchedAt : null,
+
+        // Aggregate metrics
+        totalADA: totalADA.toFixed(2),
+        totalFees: totalFees.toFixed(2),
+        averageFee: avgFee,
+        averageAmount: avgAmount,
+
+        // Real-time metrics
+        transactionsPerMinute: txPerMinute,
+        smartContractTransactions: smartContractCount,
+        nftTransactions: nftMintCount,
+        delegationTransactions: delegationCount,
+
+        // Latest transaction info
+        latestTxHash: latest ? latest.hash : null,
+        latestTxTime: latest ? latest.fetchedAt : null
       };
     } catch (error) {
       console.error('Error getting stats:', error.message);

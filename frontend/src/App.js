@@ -3,6 +3,7 @@ import axios from 'axios';
 import './App.css';
 import TransactionCard from './components/TransactionCard';
 import Stats from './components/Stats';
+import Dashboard from './components/Dashboard';
 
 function App() {
   const [transactions, setTransactions] = useState([]);
@@ -100,6 +101,8 @@ function App() {
         <h1>Cardano Transaction Viewer</h1>
         <p>Real-time Cardano blockchain transactions</p>
       </header>
+
+      {stats && <Dashboard stats={stats} />}
 
       {stats && <Stats stats={stats} onRefresh={handleManualFetch} />}
 

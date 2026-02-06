@@ -79,20 +79,32 @@ router.get('/:voterId/votes', async (req, res) => {
       .sort({ blockTime: -1 })
       .lean();
 
-    // Get proposal details for each vote
-    const votesWithProposals = await Promise.all(
-      votes.map(async (vote) => {
-        const proposal = await GovernanceProposal.findOne({
-          txHash: vote.proposalTxHash,
-          certIndex: vote.proposalCertIndex
-        }).lean();
+    // OPTIMIZED: Batch fetch proposals instead of N+1 queries
+    // Extract unique proposal identifiers
+    const proposalIds = votes.map(v => ({
+      txHash: v.proposalTxHash,
+      certIndex: v.proposalCertIndex
+    }));
 
-        return {
-          ...vote,
-          proposal: proposal
-        };
-      })
-    );
+    // Fetch ALL proposals in ONE query (instead of N queries)
+    const proposals = await GovernanceProposal.find({
+      $or: proposalIds.map(p => ({
+        txHash: p.txHash,
+        certIndex: p.certIndex
+      }))
+    }).lean();
+
+    // Create lookup map for O(1) access
+    const proposalMap = new Map();
+    proposals.forEach(p => {
+      proposalMap.set(`${p.txHash}-${p.certIndex}`, p);
+    });
+
+    // Join votes with proposals in memory
+    const votesWithProposals = votes.map(vote => ({
+      ...vote,
+      proposal: proposalMap.get(`${vote.proposalTxHash}-${vote.proposalCertIndex}`)
+    }));
 
     res.json({
       voterId: voterId,

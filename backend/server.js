@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const compression = require('compression');
 const cron = require('node-cron');
 require('dotenv').config();
 
@@ -8,7 +9,9 @@ const transactionRoutes = require('./routes/transactions');
 const governanceRoutes = require('./routes/governance');
 const drepRoutes = require('./routes/dreps');
 const lobbyingAnalyticsRoutes = require('./routes/lobbyingAnalytics');
+const metricsRoutes = require('./routes/metrics');
 const transactionService = require('./services/transactionService');
+const { performanceMiddleware } = require('./middleware/performanceMonitoring');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -16,6 +19,8 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(compression()); // Enable gzip/brotli compression
+app.use(performanceMiddleware); // Track request latency and metrics
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI, {
@@ -52,6 +57,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/governance', governanceRoutes);
 app.use('/api/dreps', drepRoutes);
 app.use('/api/lobbying', lobbyingAnalyticsRoutes);
+app.use('/api/metrics', metricsRoutes);
 
 // Schedule periodic transaction fetching
 const fetchInterval = process.env.FETCH_INTERVAL_SECONDS || 30;

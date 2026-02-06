@@ -61,4 +61,10 @@ governanceVoteSchema.index({ proposalTxHash: 1, proposalCertIndex: 1, voter: 1 }
 // Index for querying votes by proposal
 governanceVoteSchema.index({ proposalId: 1, vote: 1 });
 
+// PERFORMANCE: Compound index for voter queries (optimizes GET /dreps/:voterId/votes)
+governanceVoteSchema.index({ voter: 1, blockTime: -1 });
+
+// PERFORMANCE: Compound index for proposal lookups (optimizes batch fetching)
+governanceVoteSchema.index({ proposalTxHash: 1, proposalCertIndex: 1 });
+
 module.exports = mongoose.model('GovernanceVote', governanceVoteSchema);

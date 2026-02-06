@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const clusteringService = require('../services/clusteringService');
+const clusteringService = require('../services/clusteringServiceOptimized'); // OPTIMIZED VERSION
 const similarityService = require('../services/similarityService');
 
 // Compute voting blocs

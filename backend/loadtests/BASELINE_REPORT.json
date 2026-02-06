@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-02-06T20:06:07.411Z",
+  "results": [
+    {
+      "test": {
+        "name": "DRep Votes Endpoint (N+1 Query)",
+        "script": "./test-drep-votes.js",
+        "critical": true
+      },
+      "error": {
+        "code": 1,
+        "killed": false,
+        "signal": null,
+        "cmd": "node ./test-drep-votes.js"
+      },
+      "duration": 10225
+    },
+    {
+      "test": {
+        "name": "Similarity Endpoint",
+        "script": "./test-similarity.js",
+        "critical": true
+      },
+      "error": {
+        "code": 1,
+        "killed": false,
+        "signal": null,
+        "cmd": "node ./test-similarity.js"
+      },
+      "duration": 10177
+    },
+    {
+      "test": {
+        "name": "Clustering Endpoint (O(n²))",
+        "script": "./test-clustering.js",
+        "critical": true
+      },
+      "error": {
+        "code": 1,
+        "killed": false,
+        "signal": null,
+        "cmd": "node ./test-clustering.js"
+      },
+      "duration": 20159
+    }
+  ],
+  "summary": {
+    "totalTests": 3,
+    "passed": 0,
+    "failed": 3
+  }
+}

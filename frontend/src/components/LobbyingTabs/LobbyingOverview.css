@@ -1,0 +1,191 @@
+.lobbying-overview {
+  padding: 1.5rem;
+}
+
+.lobbying-overview h3 {
+  margin: 0 0 1.5rem 0;
+  color: #e0e6ed;
+  font-size: 1.5rem;
+}
+
+.lobbying-overview h4 {
+  margin: 0 0 1rem 0;
+  color: #3b9dff;
+  font-size: 1.125rem;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.kpi-card {
+  background: #1e3a5f;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #2a4a6f;
+  text-align: center;
+}
+
+.kpi-label {
+  color: #a0aec0;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kpi-value {
+  color: #3b9dff;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-subtitle {
+  color: #718096;
+  font-size: 0.75rem;
+}
+
+.contact-strategy-box {
+  background: #1e3a5f;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border: 1px solid #3b9dff;
+}
+
+.strategy-section {
+  margin-bottom: 1rem;
+}
+
+.strategy-section:last-child {
+  margin-bottom: 0;
+}
+
+.strategy-section strong {
+  color: #e0e6ed;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.strategy-section p {
+  color: #a0aec0;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.strategy-section ul {
+  color: #a0aec0;
+  margin: 0.5rem 0 0;
+  padding-left: 1.5rem;
+}
+
+.strategy-section ul li {
+  margin-bottom: 0.25rem;
+}
+
+.risk-flags ul {
+  color: #ef4444;
+}
+
+.risk-flag {
+  color: #ef4444 !important;
+}
+
+.what-moves-them {
+  background: #1e3a5f;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border: 1px solid #2a4a6f;
+}
+
+.section-subtitle {
+  color: #718096;
+  font-size: 0.875rem;
+  margin: 0 0 1rem 0;
+}
+
+.volatility-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.volatility-item {
+  display: grid;
+  grid-template-columns: 150px 1fr 60px;
+  gap: 1rem;
+  align-items: center;
+}
+
+.type-label {
+  color: #e0e6ed;
+  font-size: 0.875rem;
+  text-transform: capitalize;
+}
+
+.volatility-bar-container {
+  background: #0f1419;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.volatility-bar {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.volatility-value {
+  color: #a0aec0;
+  font-size: 0.875rem;
+  text-align: right;
+}
+
+.analyst-notes {
+  background: #152238;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #2a4a6f;
+}
+
+.analyst-notes ul {
+  color: #a0aec0;
+  margin: 0;
+  padding-left: 1.5rem;
+  line-height: 1.8;
+}
+
+.analyst-notes ul li {
+  margin-bottom: 0.75rem;
+}
+
+.analyst-notes strong {
+  color: #3b9dff;
+}
+
+.loading-message {
+  color: #a0aec0;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .volatility-item {
+    grid-template-columns: 100px 1fr 50px;
+    gap: 0.5rem;
+  }
+
+  .type-label {
+    font-size: 0.75rem;
+  }
+}

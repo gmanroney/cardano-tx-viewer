@@ -17,6 +17,12 @@ import {
   filterVotes,
   toCsv
 } from '../utils/drepAnalytics';
+import LobbyingOverview from './LobbyingTabs/LobbyingOverview';
+import TimelineAnalysis from './LobbyingTabs/TimelineAnalysis';
+import BlocAnalysis from './LobbyingTabs/BlocAnalysis';
+import IssuePositions from './LobbyingTabs/IssuePositions';
+import InfluenceMetrics from './LobbyingTabs/InfluenceMetrics';
+import DrilldownTable from './LobbyingTabs/DrilldownTable';
 import './DRepDetail.css';
 
 const COLORS = {
@@ -31,7 +37,7 @@ function DRepDetail({ voterId, onClose }) {
   const [allProposals, setAllProposals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('analytics');
+  const [activeTab, setActiveTab] = useState('overview');
   const [weightMode, setWeightMode] = useState('count');
   const [filters, setFilters] = useState({
     startDate: null,
@@ -43,9 +49,24 @@ function DRepDetail({ voterId, onClose }) {
   });
   const [selectedAction, setSelectedAction] = useState(null);
 
+  // Lobbying analytics state
+  const [blocData, setBlocData] = useState(null);
+  const [similarDReps, setSimilarDReps] = useState([]);
+  const [populationStats, setPopulationStats] = useState(null);
+  const [outcomes, setOutcomes] = useState(null);
+  const [persuasionTargets, setPersuasionTargets] = useState([]);
+  const [lobbyingLoading, setLobbyingLoading] = useState(false);
+
   useEffect(() => {
     fetchDRepData();
   }, [voterId]);
+
+  // Fetch lobbying analytics data when on lobbying tabs
+  useEffect(() => {
+    if (voterId && ['overview', 'timeline', 'blocs', 'issues', 'influence', 'drilldown'].includes(activeTab)) {
+      fetchLobbyingData();
+    }
+  }, [voterId, activeTab]);
 
   const fetchDRepData = async () => {
     try {
@@ -64,6 +85,29 @@ function DRepDetail({ voterId, onClose }) {
       setError('Failed to load DRep data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLobbyingData = async () => {
+    try {
+      setLobbyingLoading(true);
+      const [blocsRes, similarRes, statsRes, outcomesRes, targetsRes] = await Promise.all([
+        axios.get('/api/lobbying/compute-blocs').catch(() => ({ data: { blocs: [] } })),
+        axios.get(`/api/lobbying/similarity/${voterId}?limit=10`).catch(() => ({ data: { similar: [] } })),
+        axios.get('/api/lobbying/population-stats').catch(() => ({ data: { stats: {} } })),
+        axios.get('/api/lobbying/outcomes').catch(() => ({ data: { outcomes: {} } })),
+        axios.get('/api/lobbying/persuasion-targets?limit=20').catch(() => ({ data: { targets: [] } }))
+      ]);
+
+      setBlocData(blocsRes.data);
+      setSimilarDReps(similarRes.data.similar || []);
+      setPopulationStats(statsRes.data.stats);
+      setOutcomes(outcomesRes.data.outcomes);
+      setPersuasionTargets(targetsRes.data.targets || []);
+    } catch (err) {
+      console.error('Error fetching lobbying data:', err);
+    } finally {
+      setLobbyingLoading(false);
     }
   };
 
@@ -227,20 +271,126 @@ function DRepDetail({ voterId, onClose }) {
         {/* Tabs */}
         <div className="tabs">
           <button
+            className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => setActiveTab('overview')}
+          >
+            📋 Lobbying Overview
+          </button>
+          <button
+            className={`tab ${activeTab === 'timeline' ? 'active' : ''}`}
+            onClick={() => setActiveTab('timeline')}
+          >
+            📈 Timeline
+          </button>
+          <button
+            className={`tab ${activeTab === 'blocs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('blocs')}
+          >
+            🤝 Blocs & Alignment
+          </button>
+          <button
+            className={`tab ${activeTab === 'issues' ? 'active' : ''}`}
+            onClick={() => setActiveTab('issues')}
+          >
+            🎯 Issue Positions
+          </button>
+          <button
+            className={`tab ${activeTab === 'influence' ? 'active' : ''}`}
+            onClick={() => setActiveTab('influence')}
+          >
+            ⚖️ Influence
+          </button>
+          <button
+            className={`tab ${activeTab === 'drilldown' ? 'active' : ''}`}
+            onClick={() => setActiveTab('drilldown')}
+          >
+            📊 Drilldown
+          </button>
+          <button
             className={`tab ${activeTab === 'analytics' ? 'active' : ''}`}
             onClick={() => setActiveTab('analytics')}
           >
-            Voting Analytics
+            📉 Basic Analytics
           </button>
           <button
             className={`tab ${activeTab === 'history' ? 'active' : ''}`}
             onClick={() => setActiveTab('history')}
           >
-            Vote History
+            📜 Vote History
           </button>
         </div>
 
-        {/* Analytics Tab */}
+        {/* Lobbying Overview Tab */}
+        {activeTab === 'overview' && (
+          <div className="tab-content">
+            <LobbyingOverview
+              votes={votingHistory?.votes || []}
+              allProposals={allProposals}
+              drepData={drepData}
+              analytics={analytics}
+            />
+          </div>
+        )}
+
+        {/* Timeline Analysis Tab */}
+        {activeTab === 'timeline' && (
+          <div className="tab-content">
+            <TimelineAnalysis
+              votes={votingHistory?.votes || []}
+              allProposals={allProposals}
+            />
+          </div>
+        )}
+
+        {/* Bloc Analysis Tab */}
+        {activeTab === 'blocs' && (
+          <div className="tab-content">
+            <BlocAnalysis
+              votes={votingHistory?.votes || []}
+              blocData={blocData}
+              similarDReps={similarDReps}
+              voterId={voterId}
+            />
+          </div>
+        )}
+
+        {/* Issue Positions Tab */}
+        {activeTab === 'issues' && (
+          <div className="tab-content">
+            <IssuePositions
+              votes={votingHistory?.votes || []}
+              populationStats={populationStats}
+              analytics={analytics}
+            />
+          </div>
+        )}
+
+        {/* Influence Metrics Tab */}
+        {activeTab === 'influence' && (
+          <div className="tab-content">
+            <InfluenceMetrics
+              votes={votingHistory?.votes || []}
+              drepData={drepData}
+              allProposals={allProposals}
+              persuasionTargets={persuasionTargets}
+              outcomes={outcomes}
+            />
+          </div>
+        )}
+
+        {/* Drilldown Table Tab */}
+        {activeTab === 'drilldown' && (
+          <div className="tab-content">
+            <DrilldownTable
+              votes={votingHistory?.votes || []}
+              voterId={voterId}
+              drepName={votingHistory?.voterName || voterId}
+              analytics={analytics}
+            />
+          </div>
+        )}
+
+        {/* Basic Analytics Tab */}
         {activeTab === 'analytics' && (
           <div className="tab-content">
             {/* Weight mode toggle */}

@@ -53,6 +53,52 @@ function Governance() {
     return (parseInt(lovelace) / 1000000).toFixed(2);
   };
 
+  const formatVoterName = (vote) => {
+    // If we have a voter name from metadata, use it (CIP-119 givenName)
+    if (vote && (vote.voterGivenName || vote.voterName)) {
+      return vote.voterGivenName || vote.voterName;
+    }
+
+    // Otherwise fall back to formatting the address
+    const address = vote?.voter || vote?.address;
+    if (!address) return 'Unknown Voter';
+
+    // If it's a stake pool (starts with pool), show pool prefix
+    if (address.startsWith('pool')) {
+      return `Pool: ${address.substring(0, 12)}...${address.substring(address.length - 8)}`;
+    }
+
+    // If it's a DRep (starts with drep), show DRep prefix
+    if (address.startsWith('drep')) {
+      return `DRep: ${address.substring(0, 12)}...${address.substring(address.length - 8)}`;
+    }
+
+    // For regular addresses, show shortened version
+    if (address.length > 20) {
+      return `${address.substring(0, 12)}...${address.substring(address.length - 8)}`;
+    }
+
+    return address;
+  };
+
+  const formatVotingPower = (power) => {
+    if (!power && power !== 0) return 'N/A';
+
+    // If it's a large number (lovelace), convert to ADA
+    if (typeof power === 'string' || power > 1000000) {
+      const ada = parseInt(power) / 1000000;
+      if (ada >= 1000000) {
+        return `${(ada / 1000000).toFixed(2)}M ADA`;
+      } else if (ada >= 1000) {
+        return `${(ada / 1000).toFixed(2)}K ADA`;
+      }
+      return `${ada.toFixed(2)} ADA`;
+    }
+
+    // If it's already a percentage or small number
+    return String(power);
+  };
+
   const viewProposal = async (proposal) => {
     // Aggressive debounce: ignore clicks within 500ms of last click
     const now = Date.now();
@@ -215,6 +261,54 @@ function Governance() {
                   </div>
                 </>
               )}
+            </div>
+          )}
+
+          {proposal.votes && proposal.votes.length > 0 && (
+            <div className="voters-section">
+              <h5>Individual Votes ({proposal.votes.length})</h5>
+              <div className="voters-table-container">
+                <table className="voters-table">
+                  <thead>
+                    <tr>
+                      <th>Voter</th>
+                      <th>Vote</th>
+                      <th>Voting Power</th>
+                      <th>Epoch</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {proposal.votes.map((vote, idx) => (
+                      <tr key={idx} className={`vote-row vote-${vote.vote}`}>
+                        <td className="voter-cell" title={`${vote.voter || vote.address || 'Unknown'}\n${vote.voterDescription || ''}`}>
+                          <div className="voter-info">
+                            <span className="voter-tag">
+                              {formatVoterName(vote)}
+                            </span>
+                            {vote.voterType && vote.voterType !== 'Unknown' && (
+                              <span className="voter-type-badge">{vote.voterType}</span>
+                            )}
+                            {vote.voterTicker && (
+                              <span className="voter-ticker">[{vote.voterTicker}]</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="vote-cell">
+                          <span className={`vote-badge vote-${vote.vote}`}>
+                            {vote.vote === 'yes' ? '✓ Yes' : vote.vote === 'no' ? '✗ No' : '⊘ Abstain'}
+                          </span>
+                        </td>
+                        <td className="voting-power-cell" title={`Raw: ${vote.voting_power || vote.votingPower || 'N/A'}`}>
+                          {formatVotingPower(vote.voting_power || vote.votingPower)}
+                        </td>
+                        <td className="epoch-cell">
+                          {vote.epoch || vote.block_time_epoch || 'N/A'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

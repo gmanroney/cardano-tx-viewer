@@ -6,6 +6,7 @@ import Stats from './components/Stats';
 import Dashboard from './components/Dashboard';
 import DatabaseBrowser from './components/DatabaseBrowser';
 import Governance from './components/Governance';
+import DReps from './components/DReps';
 import TransactionList from './components/TransactionList';
 
 function App() {
@@ -15,7 +16,7 @@ function App() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, transactions, database, governance
+  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, transactions, database, governance, dreps
   const loaderRef = useRef(null);
 
   const fetchTransactions = async (pageNum) => {
@@ -132,6 +133,12 @@ function App() {
             >
               🏛️ Governance
             </button>
+            <button
+              className={`nav-btn ${currentView === 'dreps' ? 'active' : ''}`}
+              onClick={() => setCurrentView('dreps')}
+            >
+              👥 DReps
+            </button>
           </nav>
         </div>
       </header>
@@ -148,6 +155,8 @@ function App() {
       {currentView === 'database' && <DatabaseBrowser />}
 
       {currentView === 'governance' && <Governance />}
+
+      {currentView === 'dreps' && <DReps />}
 
       {error && (
         <div className="error-message">

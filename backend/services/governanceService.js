@@ -1,5 +1,6 @@
 const blockfrostService = require('./blockfrostService');
 const GovernanceProposal = require('../models/GovernanceProposal');
+const GovernanceVote = require('../models/GovernanceVote');
 
 class GovernanceService {
   async getGovernanceActions() {
@@ -250,6 +251,12 @@ class GovernanceService {
   async getProposalVotes(txHash, certIndex) {
     try {
       const votes = await blockfrostService.api.governance.proposalVotes(txHash, certIndex);
+
+      // Log the first vote to see the data structure
+      if (votes && votes.length > 0) {
+        console.log('Sample vote data:', JSON.stringify(votes[0], null, 2));
+      }
+
       return votes;
     } catch (error) {
       console.error(`Error fetching votes for proposal ${txHash}:`, error.message);
@@ -275,21 +282,131 @@ class GovernanceService {
         this.getProposalMetadata(txHash, certIndex)
       ]);
 
+      console.log(`\n=== Fetching proposal details for ${txHash} ===`);
+      console.log(`Found ${votes.length} votes`);
+
+      // Enrich votes with voter names, voting power, and epoch
+      const enrichedVotes = await this.enrichVotesWithNames(votes, txHash, certIndex);
+
+      console.log(`Enrichment complete: ${enrichedVotes.filter(v => v.voterName).length}/${enrichedVotes.length} votes have names\n`);
+
       return {
         ...proposal,
-        votes: votes || [],
+        votes: enrichedVotes || [],
         metadata: metadata,
         voteCount: {
-          yes: votes.filter(v => v.vote === 'yes').length,
-          no: votes.filter(v => v.vote === 'no').length,
-          abstain: votes.filter(v => v.vote === 'abstain').length,
-          total: votes.length
+          yes: enrichedVotes.filter(v => v.vote === 'yes').length,
+          no: enrichedVotes.filter(v => v.vote === 'no').length,
+          abstain: enrichedVotes.filter(v => v.vote === 'abstain').length,
+          total: enrichedVotes.length
         }
       };
     } catch (error) {
       console.error(`Error fetching proposal details for ${txHash}:`, error.message);
       throw error;
     }
+  }
+
+  async enrichVotesWithNames(votes, proposalTxHash, proposalCertIndex) {
+    if (!votes || votes.length === 0) {
+      return votes;
+    }
+
+    console.log(`Enriching ${votes.length} votes for proposal ${proposalTxHash}...`);
+
+    // Enrich votes with voter names and additional data (resolve in parallel for better performance)
+    const enrichedVotes = await Promise.all(
+      votes.map(async (vote) => {
+        try {
+          // Get voter name information (includes voting power from DRep/Pool info)
+          const voterInfo = await blockfrostService.resolveVoterName(vote.voter);
+
+          // Get transaction details to extract epoch and block info
+          let epoch = vote.epoch;
+          let blockHeight = null;
+          let blockTime = null;
+          let votingPower = voterInfo.votingPower;
+
+          // Extract vote tx_hash (might be in different fields)
+          const voteTxHash = vote.tx_hash || vote.vote_tx_hash;
+
+          if (voteTxHash) {
+            try {
+              const txDetails = await blockfrostService.api.txs(voteTxHash);
+
+              blockHeight = txDetails.block_height;
+              blockTime = txDetails.block_time ? new Date(txDetails.block_time * 1000) : null;
+
+              // Get the block to extract epoch
+              if (txDetails.block) {
+                const blockDetails = await blockfrostService.api.blocks(txDetails.block);
+                epoch = blockDetails.epoch;
+              }
+            } catch (txError) {
+              console.error(`Error fetching tx details for vote ${voteTxHash}:`, txError.message);
+            }
+          }
+
+          const enrichedVote = {
+            ...vote,
+            voterName: voterInfo.name || voterInfo.givenName,
+            voterGivenName: voterInfo.givenName,
+            voterType: voterInfo.type,
+            voterDescription: voterInfo.description,
+            voterTicker: voterInfo.ticker,
+            epoch: epoch,
+            blockHeight: blockHeight,
+            blockTime: blockTime,
+            voting_power: votingPower,
+            voteTxHash: voteTxHash
+          };
+
+          // Save to MongoDB
+          try {
+            await GovernanceVote.findOneAndUpdate(
+              {
+                proposalTxHash: proposalTxHash,
+                proposalCertIndex: proposalCertIndex,
+                voter: vote.voter
+              },
+              {
+                $set: {
+                  proposalId: vote.proposal_id || `${proposalTxHash}#${proposalCertIndex}`,
+                  proposalTxHash: proposalTxHash,
+                  proposalCertIndex: proposalCertIndex,
+                  voteTxHash: voteTxHash,
+                  voter: vote.voter,
+                  voterRole: vote.voter_role,
+                  vote: vote.vote,
+                  voterName: enrichedVote.voterName,
+                  voterGivenName: enrichedVote.voterGivenName,
+                  voterType: enrichedVote.voterType,
+                  voterTicker: enrichedVote.voterTicker,
+                  voterDescription: enrichedVote.voterDescription,
+                  votingPower: votingPower,
+                  epoch: epoch,
+                  blockHeight: blockHeight,
+                  blockTime: blockTime,
+                  updatedAt: new Date()
+                }
+              },
+              { upsert: true, new: true }
+            );
+          } catch (dbError) {
+            console.error(`Error saving vote to DB:`, dbError.message);
+          }
+
+          console.log(`✓ ${enrichedVote.voterName || vote.voter.substring(0, 20)}: ${vote.vote} | Power: ${votingPower ? (parseInt(votingPower) / 1000000).toFixed(0) + ' ADA' : 'N/A'} | Epoch: ${epoch || 'N/A'}`);
+
+          return enrichedVote;
+        } catch (error) {
+          console.error(`Error enriching vote for ${vote.voter}:`, error.message);
+          return vote; // Return original vote if enrichment fails
+        }
+      })
+    );
+
+    return enrichedVotes;
   }
 }
 

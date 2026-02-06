@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import DRepDetail from './DRepDetail';
 import './DReps.css';
 
 function DReps() {
@@ -7,8 +8,6 @@ function DReps() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDRep, setSelectedDRep] = useState(null);
-  const [votingHistory, setVotingHistory] = useState(null);
-  const [loadingHistory, setLoadingHistory] = useState(false);
   const [filter, setFilter] = useState('all');
   const [sortField, setSortField] = useState('totalVotes');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -31,19 +30,6 @@ function DReps() {
     }
   };
 
-  const fetchVotingHistory = async (voterId) => {
-    try {
-      setLoadingHistory(true);
-      const response = await axios.get(`/api/dreps/${voterId}/votes`);
-      setVotingHistory(response.data);
-      setSelectedDRep(voterId);
-    } catch (err) {
-      console.error('Error fetching voting history:', err);
-      setError('Failed to fetch voting history');
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
 
   const formatVoterName = (drep) => {
     if (drep.voterGivenName || drep.voterName) {
@@ -252,9 +238,9 @@ function DReps() {
                 <td className="actions-cell">
                   <button
                     className="view-history-btn"
-                    onClick={() => fetchVotingHistory(drep.voterId)}
+                    onClick={() => setSelectedDRep(drep.voterId)}
                   >
-                    View History
+                    View Analytics
                   </button>
                 </td>
               </tr>
@@ -263,81 +249,11 @@ function DReps() {
         </table>
       </div>
 
-      {selectedDRep && votingHistory && (
-        <div className="voting-history-modal" onClick={() => setSelectedDRep(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div>
-                <h3>{votingHistory.voterName || 'Voter History'}</h3>
-                <p className="voter-id">{selectedDRep}</p>
-              </div>
-              <button className="close-btn" onClick={() => setSelectedDRep(null)}>×</button>
-            </div>
-            <div className="modal-body">
-              {loadingHistory ? (
-                <div className="loading-history">
-                  <div className="spinner-small"></div>
-                  <p>Loading voting history...</p>
-                </div>
-              ) : (
-                <>
-                  <div className="history-stats">
-                    <div className="history-stat">
-                      <span className="label">Total Votes</span>
-                      <span className="value">{votingHistory.totalVotes}</span>
-                    </div>
-                    <div className="history-stat">
-                      <span className="label">Yes</span>
-                      <span className="value yes">{votingHistory.voteBreakdown.yes}</span>
-                    </div>
-                    <div className="history-stat">
-                      <span className="label">No</span>
-                      <span className="value no">{votingHistory.voteBreakdown.no}</span>
-                    </div>
-                    <div className="history-stat">
-                      <span className="label">Abstain</span>
-                      <span className="value abstain">{votingHistory.voteBreakdown.abstain}</span>
-                    </div>
-                    <div className="history-stat">
-                      <span className="label">Voting Power</span>
-                      <span className="value power">{formatVotingPower(votingHistory.votingPower)}</span>
-                    </div>
-                  </div>
-
-                  <div className="votes-list">
-                    <h4>Voting History ({votingHistory.votes.length} votes)</h4>
-                    {votingHistory.votes.map((vote, idx) => (
-                      <div key={idx} className={`vote-item vote-${vote.vote}`}>
-                        <div className="vote-header">
-                          <span className={`vote-badge vote-${vote.vote}`}>
-                            {vote.vote.toUpperCase()}
-                          </span>
-                          <span className="vote-epoch">Epoch {vote.epoch}</span>
-                          <span className="vote-date">{formatDate(vote.blockTime)}</span>
-                        </div>
-                        <div className="vote-details">
-                          <div className="proposal-info">
-                            <span className="proposal-label">Proposal:</span>
-                            <span className="proposal-type">{vote.proposal?.type || 'Unknown'}</span>
-                            <span className="proposal-status">
-                              <span className={`status-badge status-${vote.proposal?.status?.toLowerCase() || 'unknown'}`}>
-                                {vote.proposal?.status || 'Unknown'}
-                              </span>
-                            </span>
-                          </div>
-                          <div className="proposal-hash">
-                            <span className="hash-label">Tx Hash:</span>
-                            <span className="hash-value">{formatHash(vote.proposalTxHash)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+      {selectedDRep && (
+        <DRepDetail
+          voterId={selectedDRep}
+          onClose={() => setSelectedDRep(null)}
+        />
       )}
     </div>
   );
